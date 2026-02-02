@@ -196,7 +196,7 @@ If you encounter any issues not covered here, please:
 ## Production Deployment
 
 For production deployment:
-1. Set `FLASK_ENV=production` in backend `.env`
+1. Set `FLASK_ENV=production` in backend `.env` (debug mode is automatically disabled)
 2. Use a production WSGI server like Gunicorn for the backend
 3. Build the frontend with `npm run build`
 4. Serve the frontend build folder with a web server like Nginx
