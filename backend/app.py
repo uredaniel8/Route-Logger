@@ -8,7 +8,6 @@ from flask_cors import CORS
 import pandas as pd
 import os
 from datetime import datetime, timedelta
-import json
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 import requests
@@ -36,14 +35,14 @@ def normalise_customer_columns(df: pd.DataFrame) -> pd.DataFrame:
     Convert common CSV headers into the snake_case keys the frontend expects.
     Keeps extra columns but ensures required ones exist.
     """
-    if df is None or df.empty:
-        # Still ensure required columns exist for frontend stability
+    if df is None:
         df = pd.DataFrame()
 
-    # Ensure columns are strings and trimmed
+    if not hasattr(df, "columns"):
+        df = pd.DataFrame(df)
+
     df.columns = [str(c).strip() for c in df.columns]
 
-    # Map "human" CSV headers -> app keys expected by the frontend
     col_map = {
         "Company": "company",
         "Account Number": "account_number",
@@ -63,17 +62,14 @@ def normalise_customer_columns(df: pd.DataFrame) -> pd.DataFrame:
         "Next Due": "next_due_date",
     }
 
-    # Rename columns (only those we recognise)
     df = df.rename(columns={c: col_map.get(c, c) for c in df.columns})
 
-    # Tidy key fields
     if "postcode" in df.columns:
         df["postcode"] = df["postcode"].astype(str).str.strip()
 
     if "country" in df.columns:
         df["country"] = df["country"].fillna("UK").astype(str).str.strip()
 
-    # Make spend numeric if present
     if "current_spend" in df.columns:
         df["current_spend"] = (
             df["current_spend"]
@@ -83,7 +79,6 @@ def normalise_customer_columns(df: pd.DataFrame) -> pd.DataFrame:
         )
         df["current_spend"] = pd.to_numeric(df["current_spend"], errors="coerce").fillna(0)
 
-    # Ensure required columns exist (so frontend doesn't break)
     required_defaults = {
         "company": "",
         "account_number": "",
@@ -108,7 +103,6 @@ def load_customers():
     """Load customer data from CSV file"""
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
-        # Always normalise so API returns consistent keys
         df = normalise_customer_columns(df)
         return df
     return pd.DataFrame()
@@ -144,26 +138,27 @@ def group_customers_by_proximity(customers_df, max_distance_km=10):
     ungrouped = list(range(len(customers)))
 
     while ungrouped:
-        # Start a new group with the first ungrouped customer
         current_idx = ungrouped[0]
         current_group = [current_idx]
         ungrouped.remove(current_idx)
 
         current_customer = customers[current_idx]
-        current_coords = geocode_postcode(current_customer.get('postcode', ''),
-                                          current_customer.get('country', 'UK'))
+        current_coords = geocode_postcode(
+            current_customer.get('postcode', ''),
+            current_customer.get('country', 'UK')
+        )
 
         if not current_coords:
             groups.append(current_group)
             continue
 
-        # Find nearby customers
         to_remove = []
         for idx in ungrouped[:]:
             customer = customers[idx]
-            coords = geocode_postcode(customer.get('postcode', ''),
-                                      customer.get('country', 'UK'))
-
+            coords = geocode_postcode(
+                customer.get('postcode', ''),
+                customer.get('country', 'UK')
+            )
             if coords:
                 distance = geodesic(current_coords, coords).kilometers
                 if distance <= max_distance_km:
@@ -203,7 +198,6 @@ def optimize_route_with_google_maps(waypoints, api_key):
             route = data['routes'][0]
             waypoint_order = route.get('waypoint_order', [])
             legs = route.get('legs', [])
-
             return waypoint_order, legs
     except Exception as e:
         print(f"Google Maps API error: {e}")
@@ -211,16 +205,21 @@ def optimize_route_with_google_maps(waypoints, api_key):
     return [], []
 
 
+# ---------------------------
+# Customers (GET/POST/PUT)
+# Add non-/api aliases to prevent frontend 404 -> HTML -> JSON parse error
+# ---------------------------
+
 @app.route('/api/customers', methods=['GET'])
+@app.route('/customers', methods=['GET'])
 def get_customers():
     """Get all customers"""
     df = load_customers()
     customers = df.to_dict('records')
 
-    # Calculate next due dates if not present
     for customer in customers:
         if 'next_due_date' not in customer or pd.isna(customer.get('next_due_date')):
-            if 'date_of_last_visit' in customer and 'visit_frequency' in customer:
+            if customer.get('date_of_last_visit') and customer.get('visit_frequency'):
                 customer['next_due_date'] = calculate_next_due_date(
                     customer.get('date_of_last_visit', ''),
                     customer.get('visit_frequency', '')
@@ -230,9 +229,10 @@ def get_customers():
 
 
 @app.route('/api/customers', methods=['POST'])
+@app.route('/customers', methods=['POST'])
 def add_customer():
     """Add a new customer"""
-    data = request.json
+    data = request.json or {}
     df = load_customers()
 
     new_customer = pd.DataFrame([data])
@@ -245,9 +245,10 @@ def add_customer():
 
 
 @app.route('/api/customers/<int:customer_id>', methods=['PUT'])
+@app.route('/customers/<int:customer_id>', methods=['PUT'])
 def update_customer(customer_id):
     """Update a customer"""
-    data = request.json
+    data = request.json or {}
     df = load_customers()
 
     if customer_id < len(df):
@@ -260,7 +261,10 @@ def update_customer(customer_id):
     return jsonify({'error': 'Customer not found'}), 404
 
 
-# ✅ Accept BOTH routes so frontend can call either
+# ---------------------------
+# Import / Export (CSV + Raw JSON)
+# ---------------------------
+
 @app.route('/api/customers/import', methods=['POST'])
 @app.route('/customers/import', methods=['POST'])
 def import_customers():
@@ -281,7 +285,6 @@ def import_customers():
         return jsonify({'error': str(e)}), 400
 
 
-# ✅ Optional alias for raw import too
 @app.route('/api/customers/import/raw', methods=['POST'])
 @app.route('/customers/import/raw', methods=['POST'])
 def import_customers_raw():
@@ -290,10 +293,8 @@ def import_customers_raw():
 
     if not data:
         return jsonify({'error': 'No data provided'}), 400
-
     if not isinstance(data, list):
         return jsonify({'error': 'Data must be an array of customer objects'}), 400
-
     if len(data) == 0:
         return jsonify({'error': 'Data array is empty'}), 400
 
@@ -307,17 +308,21 @@ def import_customers_raw():
 
 
 @app.route('/api/customers/export', methods=['GET'])
+@app.route('/customers/export', methods=['GET'])
 def export_customers():
     """Export customers to CSV file"""
     df = load_customers()
-
     export_path = os.path.join(os.path.dirname(__file__), 'data', 'export.csv')
     df.to_csv(export_path, index=False)
-
     return send_file(export_path, as_attachment=True, download_name='customers_export.csv')
 
 
+# ---------------------------
+# Grouping + Route Optimize
+# ---------------------------
+
 @app.route('/api/groups', methods=['POST'])
+@app.route('/groups', methods=['POST'])
 def create_groups():
     """Group customers by proximity"""
     data = request.json or {}
@@ -339,6 +344,7 @@ def create_groups():
 
 
 @app.route('/api/route/optimize', methods=['POST'])
+@app.route('/route/optimize', methods=['POST'])
 def optimize_route():
     """Optimize route for given customers"""
     data = request.json or {}
@@ -349,8 +355,7 @@ def optimize_route():
 
     waypoints = []
     for customer in customers:
-        coords = geocode_postcode(customer.get('postcode', ''),
-                                  customer.get('country', 'UK'))
+        coords = geocode_postcode(customer.get('postcode', ''), customer.get('country', 'UK'))
         if coords:
             waypoints.append(coords)
 
@@ -374,6 +379,7 @@ def optimize_route():
 
 
 @app.route('/api/overdue', methods=['GET'])
+@app.route('/overdue', methods=['GET'])
 def get_overdue_customers():
     """Get customers with overdue visits"""
     df = load_customers()
@@ -389,6 +395,7 @@ def get_overdue_customers():
 
 
 @app.route('/api/health', methods=['GET'])
+@app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
