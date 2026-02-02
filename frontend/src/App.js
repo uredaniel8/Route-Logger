@@ -9,6 +9,14 @@ import './App.css';
 // You can override via frontend/.env
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Log environment configuration for debugging
+console.log('=== Route Logger Configuration ===');
+console.log('API URL:', API_URL);
+console.log('Environment:', process.env.NODE_ENV);
+console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL || '(using default)');
+console.log('REACT_APP_GOOGLE_MAPS_API_KEY:', process.env.REACT_APP_GOOGLE_MAPS_API_KEY ? '✓ Set' : '✗ Not set');
+console.log('==================================');
+
 async function readJsonSafe(response) {
   const contentType = response.headers.get('content-type') || '';
   const text = await response.text();
@@ -41,15 +49,22 @@ function App() {
     setLoading(true);
     setError(null);
 
+    console.log('Fetching customers from:', `${API_URL}/customers`);
+
     try {
       const response = await fetch(`${API_URL}/customers`);
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
         const txt = await response.text();
+        console.error('Failed to fetch customers:', response.status, txt);
         throw new Error(`HTTP ${response.status}: ${txt.slice(0, 200)}`);
       }
       const data = await readJsonSafe(response);
+      console.log('Customers loaded:', Array.isArray(data) ? data.length : 0, 'records');
       setCustomers(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error('Error fetching customers:', err);
       setError('Failed to load customers: ' + err.message);
     } finally {
       setLoading(false);
@@ -217,6 +232,14 @@ function App() {
               <button onClick={handleCreateGroups}>Group by Proximity</button>
               <button onClick={fetchCustomers}>Refresh</button>
             </div>
+
+            {customers.length === 0 && !loading && !error && (
+              <div className="empty-state">
+                <h3>No customers found</h3>
+                <p>Import customers using the buttons above to get started.</p>
+                <p>Make sure the backend API is running at: <code>{API_URL}</code></p>
+              </div>
+            )}
 
             <CustomerTable
               customers={customers}
