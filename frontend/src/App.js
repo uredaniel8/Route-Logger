@@ -31,6 +31,7 @@ async function readJsonSafe(response) {
     // The backend should use df.fillna(None) instead of df.where(pd.notnull(df), None)
     // to properly convert NaN to null before JSON serialization.
     // This is a workaround to handle invalid NaN values from pandas DataFrame serialization.
+    // Note: This regex only replaces NaN in JSON value positions (after colons), not in strings.
     const sanitizedText = text.replace(/:\s*NaN/g, ': null');
     return JSON.parse(sanitizedText);
   } catch (e) {

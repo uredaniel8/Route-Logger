@@ -6,7 +6,7 @@ const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
 
 // Log Google Maps configuration for debugging
 console.log('=== MapView Configuration ===');
-console.log('Google Maps API Key:', GOOGLE_MAPS_API_KEY ? '✓ Set (' + GOOGLE_MAPS_API_KEY.slice(0, 10) + '...)' : '✗ Not set');
+console.log('Google Maps API Key:', GOOGLE_MAPS_API_KEY ? '✓ Set' : '✗ Not set');
 console.log('============================');
 
 const mapContainerStyle = {
