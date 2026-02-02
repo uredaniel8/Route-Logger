@@ -39,21 +39,26 @@ EXPECTED_COLUMNS = [
 ]
 
 # Map your CSV headers -> expected keys
+# All keys are lowercase since we normalize headers before mapping
 CSV_COLUMN_MAP = {
-    "Company": "company",
-    "Account Number": "account_number",
-    "Country": "country",
-    "Postcode": "postcode",
-    "Status": "status",
-    "Current Year Spend": "current_spend",
-    "Tagged Customer": "tagged_customers",
-    "Date of Last Visit": "date_of_last_visit",
-    "Visit Frequency (Days)": "visit_frequency",
-    "Next Due Date": "next_due_date",
-    # Optional extras (keep them if present)
-    "Area Code": "area_code",
-    "Multi Site?": "multi_site",
-    "Urgency": "urgency",
+    "company": "company",
+    "account_number": "account_number",
+    "country": "country",
+    "postcode": "postcode",
+    "status": "status",
+    "current_year_spend": "current_spend",
+    "current_spend": "current_spend",
+    "tagged_customer": "tagged_customers",
+    "tagged_customers": "tagged_customers",
+    "date_of_last_visit": "date_of_last_visit",
+    "visit_frequency_(days)": "visit_frequency",
+    "visit_frequency": "visit_frequency",
+    "next_due_date": "next_due_date",
+    # Optional extras
+    "area_code": "area_code",
+    "multi_site?": "multi_site",
+    "multi_site": "multi_site",
+    "urgency": "urgency",
 }
 
 
@@ -118,15 +123,18 @@ def _normalize_import_df(df: pd.DataFrame) -> pd.DataFrame:
     - Ensures numeric types for spend/frequency
     - Ensures NaN becomes None
     """
-    # Rename columns we recognise
-    rename_map = {c: CSV_COLUMN_MAP[c] for c in df.columns if c in CSV_COLUMN_MAP}
+    # First normalize all column names to lowercase for case-insensitive matching
+    df.columns = df.columns.str.strip().str.lower()
+    
+    # Rename columns we recognise (now working with lowercase)
+    rename_map = {c: CSV_COLUMN_MAP.get(c, c) for c in df.columns if c in CSV_COLUMN_MAP}
     df = df.rename(columns=rename_map)
 
-    # If someone exported with slightly different casing/spaces, try a soft match
-    # (e.g. "Account number" vs "Account Number")
-    lower_map = {c.lower().strip(): c for c in df.columns}
+    # Try to match any columns we might have missed with soft matching
+    # This handles cases like "account number" vs "account_number"
+    lower_map = {c.lower().strip().replace(' ', '_'): c for c in df.columns}
     for original, target in CSV_COLUMN_MAP.items():
-        key = original.lower().strip()
+        key = original.lower().strip().replace(' ', '_')
         if key in lower_map and target not in df.columns:
             df = df.rename(columns={lower_map[key]: target})
 
@@ -365,7 +373,7 @@ def import_customers():
             return jsonify({
                 "error": "CSV is missing required columns after mapping.",
                 "missing": missing,
-                "hint": "Your CSV headers should include: Company, Account Number, Country, Postcode, Status, Current Year Spend, Tagged Customer, Date of Last Visit, Visit Frequency (Days), Next Due Date"
+                "hint": "Your CSV should include these columns (case-insensitive): company, account_number, country, postcode, status, current_spend, tagged_customers, date_of_last_visit, visit_frequency, next_due_date. Common variants like 'Current Year Spend' or 'Visit Frequency (Days)' are also accepted."
             }), 400
 
         save_customers(df)
