@@ -6,11 +6,21 @@ An interactive route planning and customer grouping application that helps optim
 
 - **Customer Management**: Import, export, and manage customer data via CSV
 - **Proximity Grouping**: Automatically group customers based on geographical proximity
-- **Route Optimization**: Optimize visit routes using Google Maps API
+- **Route Optimization**: Optimize visit routes using Google Maps API with intelligent geocoding error handling
 - **Interactive Map View**: Visualize customer locations on an interactive map
 - **Priority Management**: Track visit frequency, last visit dates, and overdue visits
 - **Editable Routes**: Manually adjust and reorder visit priorities
 - **CSV Export**: Export optimized routes and customer data
+- **Robust Error Handling**: Detailed validation and error reporting for postcodes and geocoding failures
+
+## Documentation
+
+- **[Installation Guide](INSTALLATION.md)**: Setup instructions for backend and frontend
+- **[Quickstart Guide](QUICKSTART.md)**: Get started quickly with Route Logger
+- **[API Documentation](API_DOCUMENTATION.md)**: Complete REST API reference
+- **[Geocoding Error Handling](GEOCODING_ERROR_HANDLING.md)**: Guide to understanding and troubleshooting geocoding issues
+- **[Features](FEATURES.md)**: Detailed feature documentation
+- **[Raw Import Guide](RAW_IMPORT_GUIDE.md)**: How to import customer data
 
 ## Project Structure
 
