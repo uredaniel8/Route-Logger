@@ -22,6 +22,7 @@ const defaultCenter = {
 function MapView({ customers, selectedCustomers, onSelectionChange }) {
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [customerLocations, setCustomerLocations] = useState([]);
+  const [mapsLoadError, setMapsLoadError] = useState(false);
 
   useEffect(() => {
     console.log('MapView: Processing', customers.length, 'customers');
@@ -91,8 +92,14 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
         </div>
       </div>
 
-      {GOOGLE_MAPS_API_KEY ? (
-        <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+      {GOOGLE_MAPS_API_KEY && !mapsLoadError ? (
+        <LoadScript 
+          googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+          onError={() => {
+            console.error('Failed to load Google Maps API');
+            setMapsLoadError(true);
+          }}
+        >
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={defaultCenter}

@@ -27,9 +27,14 @@ async function readJsonSafe(response) {
   }
 
   try {
-    return JSON.parse(text);
+    // Fix invalid NaN values that might come from pandas DataFrame serialization
+    // This is a workaround for backend issue where NaN is not properly converted to null
+    const sanitizedText = text.replace(/:\s*NaN/g, ': null');
+    return JSON.parse(sanitizedText);
   } catch (e) {
-    throw new Error(`Invalid JSON returned: ${text.slice(0, 120)}...`);
+    console.error('JSON parse error:', e.message);
+    console.error('First 200 chars of response:', text.slice(0, 200));
+    throw new Error(`Invalid JSON returned: ${e.message}`);
   }
 }
 
