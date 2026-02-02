@@ -38,13 +38,10 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
     console.log('MapView: Mock locations generated for', mockLocations.length, 'customers');
   }, [customers]);
 
-  const onLoad = useCallback(() => {
-    // Map loaded successfully
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    // Map unmounted
-  }, []);
+  // Note: GoogleMap component requires onLoad and onUnmount callbacks even if not used
+  // These satisfy the component's API requirements
+  const onLoad = useCallback(() => {}, []);
+  const onUnmount = useCallback(() => {}, []);
 
   const handleMarkerClick = (location) => {
     setSelectedMarker(location);
