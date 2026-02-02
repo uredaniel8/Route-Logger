@@ -275,11 +275,15 @@ Optimize the visiting route for selected customers using Google Maps API.
 **Request Body**:
 ```json
 {
-  "customer_ids": [0, 2, 5, 7]
+  "customer_ids": [0, 2, 5, 7],
+  "start_postcode": "SW1A 1AA",  // Optional
+  "start_country": "UK",          // Optional, defaults to "UK"
+  "end_postcode": "EC1A 1BB",     // Optional
+  "end_country": "UK"             // Optional, defaults to "UK"
 }
 ```
 
-**Response**:
+**Success Response**:
 ```json
 {
   "optimized_customers": [
@@ -305,16 +309,61 @@ Optimize the visiting route for selected customers using Google Maps API.
   "waypoints": [
     [51.5074, -0.1278],
     [51.5155, -0.1426]
+  ],
+  "start_postcode": "SW1A 1AA",
+  "end_postcode": "EC1A 1BB"
+}
+```
+
+**Error Response** (Insufficient waypoints):
+```json
+{
+  "error": "Need at least 2 total waypoints",
+  "details": "Please select at least 2 customers or provide start/end postcodes to create a valid route.",
+  "current_waypoints": 1,
+  "required_waypoints": 2
+}
+```
+
+**Error Response** (Geocoding failures):
+```json
+{
+  "error": "Need at least 2 valid locations after geocoding",
+  "details": "Some postcodes could not be geocoded. Please verify the postcodes are valid and try again.",
+  "valid_waypoints": 1,
+  "required_waypoints": 2,
+  "geocoding_stats": {
+    "total_attempted": 3,
+    "successful": 1,
+    "failed": 2
+  },
+  "summary": [
+    "Geocoding succeeded for 1 out of 3 locations (33%)"
+  ],
+  "failed_customers": [
+    {
+      "company": "Test Company",
+      "postcode": "INVALID",
+      "country": "UK"
+    }
+  ],
+  "failed_customers_formatted": "- Test Company: INVALID (UK)",
+  "suggestions": [
+    "Verify the postcode format is correct (e.g., 'SW1A 1AA' for UK)",
+    "Ensure the country is specified correctly",
+    "Try using a different postcode or customer location",
+    "Check customer postcode data for accuracy",
+    "Consider selecting different customers with valid postcodes"
   ]
 }
 ```
 
-**Error Response**:
-```json
-{
-  "error": "Need at least 2 valid locations"
-}
-```
+**Notes**:
+- At least 2 waypoints are required to create a route (combination of customers and start/end postcodes)
+- Postcodes are validated for basic format before geocoding
+- Invalid or malformed postcodes are logged and reported in error messages
+- Geocoding statistics provide visibility into success/failure rates
+- Error messages include actionable suggestions for fixing data issues
 
 ---
 
