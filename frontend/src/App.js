@@ -87,6 +87,29 @@ function App() {
     }
   };
 
+  const handleImportRaw = async (jsonData) => {
+    try {
+      const data = JSON.parse(jsonData);
+      
+      const response = await fetch(`${API_URL}/customers/import/raw`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        fetchCustomers();
+        alert(result.message);
+      } else {
+        const error = await response.json();
+        setError(error.error || 'Failed to import customers');
+      }
+    } catch (err) {
+      setError('Error importing customers: ' + err.message);
+    }
+  };
+
   const handleCreateGroups = async () => {
     setLoading(true);
     try {
@@ -152,6 +175,10 @@ function App() {
                   onChange={(e) => e.target.files[0] && handleImport(e.target.files[0])}
                 />
               </label>
+              <button onClick={() => {
+                const jsonData = prompt('Paste JSON array of customer objects:');
+                if (jsonData) handleImportRaw(jsonData);
+              }}>Import Raw JSON</button>
               <button onClick={handleCreateGroups}>Group by Proximity</button>
               <button onClick={fetchCustomers}>Refresh</button>
             </div>
