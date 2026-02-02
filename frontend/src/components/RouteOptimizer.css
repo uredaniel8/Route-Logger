@@ -325,6 +325,30 @@
   font-size: 1.1rem;
 }
 
+.loading-message {
+  padding: 1rem;
+  background-color: #e6fffa;
+  color: #234e52;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+  border: 1px solid #81e6d9;
+}
+
+.loading-message p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.map-placeholder {
+  padding: 2rem;
+  background-color: #f7fafc;
+  border-radius: 4px;
+  text-align: center;
+  color: #718096;
+  border: 2px dashed #cbd5e0;
+}
+
 @media (max-width: 1024px) {
   .optimizer-content {
     grid-template-columns: 1fr;
