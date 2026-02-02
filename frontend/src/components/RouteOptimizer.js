@@ -87,9 +87,8 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
     }
 
     const geocodeRoute = async () => {
-      const coords = [];
-      
-      for (const customer of optimizedRoute.optimized_customers) {
+      // Use Promise.all to parallelize geocoding requests
+      const geocodePromises = optimizedRoute.optimized_customers.map(async (customer) => {
         try {
           const address = `${customer.postcode}, ${customer.country || 'UK'}`;
           const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`;
@@ -99,22 +98,39 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
           
           if (data.status === 'OK' && data.results.length > 0) {
             const location = data.results[0].geometry.location;
-            coords.push({
+            return {
               ...customer,
               lat: location.lat,
               lng: location.lng,
-            });
+            };
+          } else {
+            // Log specific geocoding errors
+            if (data.status === 'OVER_QUERY_LIMIT') {
+              console.warn('Geocoding rate limit exceeded for:', customer.postcode);
+            } else if (data.status === 'REQUEST_DENIED') {
+              console.error('Geocoding request denied. Check API key permissions.');
+            } else {
+              console.warn(`Geocoding failed for ${customer.postcode}: ${data.status}`);
+            }
+            return null;
           }
         } catch (error) {
           console.error('Error geocoding customer:', customer.company, error);
+          return null;
         }
-      }
+      });
+      
+      const results = await Promise.all(geocodePromises);
+      const coords = results.filter(coord => coord !== null);
       
       setRouteCoordinates(coords);
       
       // Set map center to first coordinate
       if (coords.length > 0) {
         setMapCenter({ lat: coords[0].lat, lng: coords[0].lng });
+      } else if (results.length > 0) {
+        // Show error if all geocoding failed
+        console.error('All geocoding requests failed. Unable to display route on map.');
       }
     };
 
