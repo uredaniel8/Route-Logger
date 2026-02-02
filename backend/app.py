@@ -124,9 +124,7 @@ def _normalize_import_df(df: pd.DataFrame) -> pd.DataFrame:
     - Ensures NaN becomes None
     """
     # First normalize all column names to lowercase for case-insensitive matching
-    df.columns = df.columns.str.strip()
-    original_columns = df.columns.tolist()
-    df.columns = df.columns.str.lower()
+    df.columns = df.columns.str.strip().str.lower()
     
     # Rename columns we recognise (now working with lowercase)
     rename_map = {c: CSV_COLUMN_MAP.get(c, c) for c in df.columns if c in CSV_COLUMN_MAP}
@@ -375,7 +373,7 @@ def import_customers():
             return jsonify({
                 "error": "CSV is missing required columns after mapping.",
                 "missing": missing,
-                "hint": "Your CSV should include these columns (case-insensitive): company, account_number, country, postcode, status, current_spend (or current_year_spend), tagged_customers (or tagged_customer), date_of_last_visit, visit_frequency, next_due_date"
+                "hint": "Your CSV should include these columns (case-insensitive): company, account_number, country, postcode, status, current_spend, tagged_customers, date_of_last_visit, visit_frequency, next_due_date. Common variants like 'Current Year Spend' or 'Visit Frequency (Days)' are also accepted."
             }), 400
 
         save_customers(df)
