@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { GoogleMap, LoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
 import './RouteOptimizer.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+
+const routeMapContainerStyle = {
+  width: '100%',
+  height: '800px',
+  marginTop: '20px',
+};
 
 function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [optimizedRoute, setOptimizedRoute] = useState(null);
@@ -9,6 +17,9 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [error, setError] = useState(null);
   const [startPostcode, setStartPostcode] = useState('');
   const [endPostcode, setEndPostcode] = useState('');
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 56.4907, lng: -4.2026 });
 
   const handleOptimizeRoute = async () => {
     // Count total waypoints: customers + optional start/end postcodes
@@ -67,6 +78,64 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
       optimized_customers: newOrder,
     });
   };
+
+  // Geocode optimized route customers for map visualization
+  useEffect(() => {
+    if (!optimizedRoute || !optimizedRoute.optimized_customers || !GOOGLE_MAPS_API_KEY) {
+      setRouteCoordinates([]);
+      return;
+    }
+
+    const geocodeRoute = async () => {
+      // Use Promise.all to parallelize geocoding requests
+      const geocodePromises = optimizedRoute.optimized_customers.map(async (customer) => {
+        try {
+          const address = `${customer.postcode}, ${customer.country || 'UK'}`;
+          const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`;
+          
+          const response = await fetch(url);
+          const data = await response.json();
+          
+          if (data.status === 'OK' && data.results.length > 0) {
+            const location = data.results[0].geometry.location;
+            return {
+              ...customer,
+              lat: location.lat,
+              lng: location.lng,
+            };
+          } else {
+            // Log specific geocoding errors
+            if (data.status === 'OVER_QUERY_LIMIT') {
+              console.warn('Geocoding rate limit exceeded for:', customer.postcode);
+            } else if (data.status === 'REQUEST_DENIED') {
+              console.error('Geocoding request denied. Check API key permissions.');
+            } else {
+              console.warn(`Geocoding failed for ${customer.postcode}: ${data.status}`);
+            }
+            return null;
+          }
+        } catch (error) {
+          console.error('Error geocoding customer:', customer.company, error);
+          return null;
+        }
+      });
+      
+      const results = await Promise.all(geocodePromises);
+      const coords = results.filter(coord => coord !== null);
+      
+      setRouteCoordinates(coords);
+      
+      // Set map center to first coordinate
+      if (coords.length > 0) {
+        setMapCenter({ lat: coords[0].lat, lng: coords[0].lng });
+      } else if (results.length > 0) {
+        // Show error if all geocoding failed
+        console.error('All geocoding requests failed. Unable to display route on map.');
+      }
+    };
+
+    geocodeRoute();
+  }, [optimizedRoute]);
 
   const calculateTotalDistance = () => {
     if (!optimizedRoute || !optimizedRoute.route_legs) return 0;
@@ -255,6 +324,58 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
               >
                 Export Route as CSV
               </button>
+
+              {/* Route Visualization Map */}
+              {GOOGLE_MAPS_API_KEY && routeCoordinates.length > 0 && (
+                <div className="route-map-container">
+                  <h4>Route Visualization</h4>
+                  <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+                    <GoogleMap
+                      mapContainerStyle={routeMapContainerStyle}
+                      center={mapCenter}
+                      zoom={10}
+                    >
+                      {/* Draw polyline connecting all stops */}
+                      <Polyline
+                        path={routeCoordinates.map(c => ({ lat: c.lat, lng: c.lng }))}
+                        options={{
+                          strokeColor: '#2196F3',
+                          strokeOpacity: 0.8,
+                          strokeWeight: 4,
+                        }}
+                      />
+                      
+                      {/* Add markers for each stop */}
+                      {routeCoordinates.map((coord, index) => (
+                        <Marker
+                          key={index}
+                          position={{ lat: coord.lat, lng: coord.lng }}
+                          label={{
+                            text: `${index + 1}`,
+                            color: 'white',
+                            fontWeight: 'bold',
+                          }}
+                          onClick={() => setSelectedMarker(coord)}
+                        />
+                      ))}
+
+                      {/* InfoWindow for selected marker */}
+                      {selectedMarker && (
+                        <InfoWindow
+                          position={{ lat: selectedMarker.lat, lng: selectedMarker.lng }}
+                          onCloseClick={() => setSelectedMarker(null)}
+                        >
+                          <div>
+                            <h4>{selectedMarker.company}</h4>
+                            <p><strong>Postcode:</strong> {selectedMarker.postcode}</p>
+                            <p><strong>Account:</strong> {selectedMarker.account_number}</p>
+                          </div>
+                        </InfoWindow>
+                      )}
+                    </GoogleMap>
+                  </LoadScript>
+                </div>
+              )}
             </div>
           ) : (
             <div className="no-route">
