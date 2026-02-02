@@ -7,10 +7,12 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [optimizedRoute, setOptimizedRoute] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [startPostcode, setStartPostcode] = useState('');
+  const [endPostcode, setEndPostcode] = useState('');
 
   const handleOptimizeRoute = async () => {
-    if (selectedCustomers.length < 2) {
-      setError('Please select at least 2 customers to optimize a route');
+    if (selectedCustomers.length < 2 && !startPostcode && !endPostcode) {
+      setError('Please select at least 2 customers to optimize a route, or provide start/end postcodes');
       return;
     }
 
@@ -18,14 +20,27 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
     setError(null);
 
     try {
+      const requestBody = {
+        customer_ids: selectedCustomers,
+      };
+
+      // Add start and end postcodes if provided
+      if (startPostcode) {
+        requestBody.start_postcode = startPostcode;
+      }
+      if (endPostcode) {
+        requestBody.end_postcode = endPostcode;
+      }
+
       const response = await fetch(`${API_URL}/route/optimize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customer_ids: selectedCustomers }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to optimize route');
+        const errorText = await response.text();
+        throw new Error(`Failed to optimize route: ${errorText}`);
       }
 
       const data = await response.json();
@@ -80,6 +95,36 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
 
       <div className="optimizer-content">
         <div className="selection-panel">
+          <h3>Route Configuration</h3>
+          
+          <div className="route-config">
+            <div className="config-field">
+              <label htmlFor="start-postcode">Start Postcode (Optional)</label>
+              <input
+                id="start-postcode"
+                type="text"
+                placeholder="e.g., SW1A 1AA"
+                value={startPostcode}
+                onChange={(e) => setStartPostcode(e.target.value)}
+                className="postcode-input"
+              />
+              <small>Leave empty to start from the first customer</small>
+            </div>
+            
+            <div className="config-field">
+              <label htmlFor="end-postcode">End Postcode (Optional)</label>
+              <input
+                id="end-postcode"
+                type="text"
+                placeholder="e.g., SW1A 1AA"
+                value={endPostcode}
+                onChange={(e) => setEndPostcode(e.target.value)}
+                className="postcode-input"
+              />
+              <small>Leave empty to end at the last customer</small>
+            </div>
+          </div>
+
           <h3>Selected Customers ({selectedCustomers.length})</h3>
           {selectedCustomersList.length === 0 ? (
             <p className="no-selection">No customers selected. Go to the Customers tab to select customers.</p>
@@ -105,7 +150,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
           
           <button 
             onClick={handleOptimizeRoute}
-            disabled={selectedCustomers.length < 2 || loading}
+            disabled={selectedCustomers.length < 1 || loading}
             className="optimize-btn"
           >
             {loading ? 'Optimizing...' : 'Optimize Route'}

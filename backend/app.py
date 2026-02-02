@@ -445,32 +445,95 @@ def optimize_route():
     """Optimize route for given customers"""
     data = request.json or {}
     customer_ids = data.get("customer_ids", [])
+    start_postcode = data.get("start_postcode")
+    end_postcode = data.get("end_postcode")
 
     df = load_customers()
-    if len(customer_ids) == 0:
-        return jsonify({"error": "No customers selected"}), 400
+    if len(customer_ids) == 0 and not start_postcode:
+        return jsonify({"error": "No customers selected and no start postcode provided"}), 400
 
-    customers = df.iloc[customer_ids].to_dict("records")
+    # Get selected customers
+    customers = df.iloc[customer_ids].to_dict("records") if customer_ids else []
 
+    # Build waypoints list
     waypoints = []
+    
+    # Add start postcode if provided
+    if start_postcode:
+        start_coords = geocode_postcode(start_postcode, data.get("start_country", "UK"))
+        if not start_coords:
+            return jsonify({"error": f"Could not geocode start postcode: {start_postcode}"}), 400
+        waypoints.append(start_coords)
+    
+    # Add customer waypoints
     for customer in customers:
         coords = geocode_postcode(customer.get("postcode", ""), customer.get("country", "UK"))
         if coords:
             waypoints.append(coords)
+    
+    # Add end postcode if provided
+    if end_postcode:
+        end_coords = geocode_postcode(end_postcode, data.get("end_country", "UK"))
+        if not end_coords:
+            return jsonify({"error": f"Could not geocode end postcode: {end_postcode}"}), 400
+        waypoints.append(end_coords)
 
     if len(waypoints) < 2:
-        return jsonify({"error": "Need at least 2 valid locations"}), 400
+        return jsonify({"error": "Need at least 2 valid locations (customers or start/end postcodes)"}), 400
 
     optimized_order, legs = optimize_route_with_google_maps(waypoints, GOOGLE_MAPS_API_KEY)
 
-    if optimized_order and len(customers) > 2:
-        middle_customers = customers[1:-1]
-        reordered_middle = [middle_customers[i] for i in optimized_order]
-        optimized_customers = [customers[0]] + reordered_middle + [customers[-1]]
+    # Reconstruct optimized customer list based on the order
+    if optimized_order and len(customers) > 0:
+        # Google Maps returns the order of intermediate waypoints (excluding first and last)
+        # We need to map this back to our customers
+        
+        start_offset = 1 if start_postcode else 0
+        
+        if start_postcode and end_postcode:
+            # Start + customers + end
+            if len(customers) > 0:
+                reordered_customers = [customers[i] for i in optimized_order]
+            else:
+                reordered_customers = []
+        elif start_postcode:
+            # Start + customers (last customer is the end)
+            if len(customers) > 1:
+                middle_customers = customers[:-1]
+                reordered_middle = [middle_customers[i] for i in optimized_order]
+                reordered_customers = reordered_middle + [customers[-1]]
+            else:
+                reordered_customers = customers
+        elif end_postcode:
+            # First customer is start + middle customers + end
+            if len(customers) > 1:
+                middle_customers = customers[1:]
+                reordered_middle = [middle_customers[i] for i in optimized_order]
+                reordered_customers = [customers[0]] + reordered_middle
+            else:
+                reordered_customers = customers
+        else:
+            # Just customers, first and last are fixed
+            if len(customers) > 2:
+                middle_customers = customers[1:-1]
+                reordered_middle = [middle_customers[i] for i in optimized_order]
+                reordered_customers = [customers[0]] + reordered_middle + [customers[-1]]
+            else:
+                reordered_customers = customers
+        
+        optimized_customers = reordered_customers
     else:
         optimized_customers = customers
 
-    return jsonify({"optimized_customers": optimized_customers, "route_legs": legs, "waypoints": waypoints})
+    result = {
+        "optimized_customers": optimized_customers,
+        "route_legs": legs,
+        "waypoints": waypoints,
+        "start_postcode": start_postcode,
+        "end_postcode": end_postcode,
+    }
+
+    return jsonify(result)
 
 
 @app.route("/api/overdue", methods=["GET"])

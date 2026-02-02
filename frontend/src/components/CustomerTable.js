@@ -5,6 +5,9 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterAreaCode, setFilterAreaCode] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -16,6 +19,30 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
 
   const sortedCustomers = React.useMemo(() => {
     let sorted = [...customers];
+    
+    // Apply filters
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      sorted = sorted.filter(customer => 
+        (customer.company && customer.company.toLowerCase().includes(lowerSearchTerm)) ||
+        (customer.account_number && customer.account_number.toLowerCase().includes(lowerSearchTerm)) ||
+        (customer.postcode && customer.postcode.toLowerCase().includes(lowerSearchTerm))
+      );
+    }
+    
+    if (filterAreaCode) {
+      sorted = sorted.filter(customer => 
+        customer.tagged_customers && customer.tagged_customers.toLowerCase() === filterAreaCode.toLowerCase()
+      );
+    }
+    
+    if (filterStatus) {
+      sorted = sorted.filter(customer => 
+        customer.status && customer.status.toLowerCase() === filterStatus.toLowerCase()
+      );
+    }
+    
+    // Apply sorting
     if (sortConfig.key) {
       sorted.sort((a, b) => {
         const aVal = a[sortConfig.key] || '';
@@ -26,7 +53,7 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
       });
     }
     return sorted;
-  }, [customers, sortConfig]);
+  }, [customers, sortConfig, searchTerm, filterAreaCode, filterStatus]);
 
   const handleCheckboxChange = (index, checked) => {
     if (checked) {
@@ -57,8 +84,60 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
     return new Date(nextDueDate) < new Date();
   };
 
+  // Get unique area codes and statuses for filter dropdowns
+  const uniqueAreaCodes = React.useMemo(() => {
+    const codes = customers.map(c => c.tagged_customers).filter(Boolean);
+    return [...new Set(codes)].sort();
+  }, [customers]);
+
+  const uniqueStatuses = React.useMemo(() => {
+    const statuses = customers.map(c => c.status).filter(Boolean);
+    return [...new Set(statuses)].sort();
+  }, [customers]);
+
   return (
     <div className="customer-table-container">
+      <div className="filter-controls">
+        <input
+          type="text"
+          placeholder="Search by company, account, or postcode..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        <select
+          value={filterAreaCode}
+          onChange={(e) => setFilterAreaCode(e.target.value)}
+          className="filter-select"
+        >
+          <option value="">All Area Codes</option>
+          {uniqueAreaCodes.map(code => (
+            <option key={code} value={code}>{code}</option>
+          ))}
+        </select>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="filter-select"
+        >
+          <option value="">All Statuses</option>
+          {uniqueStatuses.map(status => (
+            <option key={status} value={status}>{status}</option>
+          ))}
+        </select>
+        {(searchTerm || filterAreaCode || filterStatus) && (
+          <button 
+            onClick={() => {
+              setSearchTerm('');
+              setFilterAreaCode('');
+              setFilterStatus('');
+            }}
+            className="clear-filters-btn"
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
       <table className="customer-table">
         <thead>
           <tr>
@@ -71,7 +150,7 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
             <th>Postcode</th>
             <th>Status</th>
             <th>Current Spend</th>
-            <th>Tier</th>
+            <th>Area Code</th>
             <th onClick={() => handleSort('date_of_last_visit')} style={{ cursor: 'pointer' }}>
               Last Visit {sortConfig.key === 'date_of_last_visit' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
             </th>
@@ -106,12 +185,22 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
                     onChange={(e) => setEditData({ ...editData, tagged_customers: e.target.value })}
                   />
                 ) : (
-                  <span className={`tier-badge ${typeof customer.tagged_customers === 'string' ? customer.tagged_customers.toLowerCase() : ''}`}>
+                  <span className={`area-code-badge ${typeof customer.tagged_customers === 'string' ? customer.tagged_customers.toLowerCase() : ''}`}>
                     {customer.tagged_customers}
                   </span>
                 )}
               </td>
-              <td>{customer.date_of_last_visit}</td>
+              <td>
+                {editingId === index ? (
+                  <input
+                    type="date"
+                    value={editData.date_of_last_visit || ''}
+                    onChange={(e) => setEditData({ ...editData, date_of_last_visit: e.target.value })}
+                  />
+                ) : (
+                  customer.date_of_last_visit
+                )}
+              </td>
               <td>
                 {editingId === index ? (
                   <input
