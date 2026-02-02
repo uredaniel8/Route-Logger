@@ -20,7 +20,6 @@ const defaultCenter = {
 };
 
 function MapView({ customers, selectedCustomers, onSelectionChange }) {
-  const [map, setMap] = useState(null);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [customerLocations, setCustomerLocations] = useState([]);
 
@@ -38,12 +37,12 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
     console.log('MapView: Mock locations generated for', mockLocations.length, 'customers');
   }, [customers]);
 
-  const onLoad = useCallback((map) => {
-    setMap(map);
+  const onLoad = useCallback(() => {
+    // Map loaded successfully
   }, []);
 
   const onUnmount = useCallback(() => {
-    setMap(null);
+    // Map unmounted
   }, []);
 
   const handleMarkerClick = (location) => {
