@@ -3,10 +3,12 @@ import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/ap
 import './MapView.css';
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Log Google Maps configuration for debugging
 console.log('=== MapView Configuration ===');
 console.log('Google Maps API Key:', GOOGLE_MAPS_API_KEY ? '✓ Set' : '✗ Not set');
+console.log('API URL:', API_URL);
 console.log('============================');
 
 const mapContainerStyle = {
@@ -26,16 +28,64 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
 
   useEffect(() => {
     console.log('MapView: Processing', customers.length, 'customers');
-    // In a real app, you would geocode postcodes here
-    // For now, we'll use mock coordinates around London
-    const mockLocations = customers.map((customer, index) => ({
-      ...customer,
-      lat: 51.5074 + (Math.random() - 0.5) * 0.2,
-      lng: -0.1278 + (Math.random() - 0.5) * 0.2,
-      index,
-    }));
-    setCustomerLocations(mockLocations);
-    console.log('MapView: Mock locations generated for', mockLocations.length, 'customers');
+    if (customers.length === 0) {
+      setCustomerLocations([]);
+      return;
+    }
+
+    // Use Google Maps Geocoding API to get real coordinates
+    const geocodeCustomers = async () => {
+      const locationsPromises = customers.map(async (customer, index) => {
+        try {
+          if (!customer.postcode) {
+            console.warn('Customer missing postcode:', customer.company);
+            return null;
+          }
+
+          // Use Google Maps Geocoding API
+          const address = `${customer.postcode}, ${customer.country || 'UK'}`;
+          const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`;
+          
+          const response = await fetch(url);
+          const data = await response.json();
+          
+          if (data.status === 'OK' && data.results.length > 0) {
+            const location = data.results[0].geometry.location;
+            return {
+              ...customer,
+              lat: location.lat,
+              lng: location.lng,
+              index,
+            };
+          } else {
+            console.warn('Geocoding failed for:', customer.postcode, data.status);
+            return null;
+          }
+        } catch (error) {
+          console.error('Error geocoding customer:', customer.company, error);
+          return null;
+        }
+      });
+
+      const locations = await Promise.all(locationsPromises);
+      const validLocations = locations.filter(loc => loc !== null);
+      setCustomerLocations(validLocations);
+      console.log('MapView: Successfully geocoded', validLocations.length, 'out of', customers.length, 'customers');
+    };
+
+    if (GOOGLE_MAPS_API_KEY) {
+      geocodeCustomers();
+    } else {
+      // Fallback to mock locations if no API key
+      const mockLocations = customers.map((customer, index) => ({
+        ...customer,
+        lat: 51.5074 + (Math.random() - 0.5) * 0.2,
+        lng: -0.1278 + (Math.random() - 0.5) * 0.2,
+        index,
+      }));
+      setCustomerLocations(mockLocations);
+      console.log('MapView: Using mock locations (no API key)');
+    }
   }, [customers]);
 
   // Note: GoogleMap component requires onLoad and onUnmount callbacks even if not used
@@ -122,7 +172,7 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
                   <h3>{selectedMarker.company}</h3>
                   <p><strong>Account:</strong> {selectedMarker.account_number}</p>
                   <p><strong>Postcode:</strong> {selectedMarker.postcode}</p>
-                  <p><strong>Tier:</strong> {selectedMarker.tagged_customers}</p>
+                  <p><strong>Area Code:</strong> {selectedMarker.tagged_customers}</p>
                   <p><strong>Last Visit:</strong> {selectedMarker.date_of_last_visit}</p>
                   <p className={isOverdue(selectedMarker.next_due_date) ? 'overdue' : ''}>
                     <strong>Next Due:</strong> {selectedMarker.next_due_date}

@@ -100,7 +100,7 @@ The frontend will run on `http://localhost:3000`
 1. **View Customers**: Navigate to the "Customers" tab to see all customer data in a table format
 2. **Edit Customer Data**: Click the "Edit" button on any customer row to modify:
    - Visit frequency (days between visits)
-   - Tier group (Premium, Standard, etc.)
+   - Area code group (Premium, Standard, etc.)
 3. **Import Customers**: 
    - Click "Import CSV" to upload a customer data file
    - Click "Import Raw JSON" to paste JSON array directly
