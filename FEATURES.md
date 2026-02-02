@@ -106,6 +106,13 @@ Click any marker to view:
 - Next due date (with overdue warning if applicable)
 - Select/Deselect button
 
+### Filter Controls
+**New Feature: Show Only Selected Customers Toggle**
+- Use the checkbox toggle to filter the map view
+- When enabled, only displays selected customers (green markers)
+- Useful for focusing on customers in your current route plan
+- Toggle can be easily switched on/off for different views
+
 ### Legend
 Visual guide showing marker colors and their meanings
 
@@ -154,6 +161,16 @@ Numbered sequence showing:
 - Considers real-time traffic data (when available)
 - Optimizes for shortest distance or time
 - Respects waypoint constraints
+
+### Route Visualization
+**Enhanced Performance Features:**
+- **Geocoding Cache**: Coordinates are cached to avoid redundant API calls
+- **Fast Loading**: Map renders quickly even with many waypoints
+- **Loading Indicators**: Clear visual feedback during geocoding process
+- **Error Handling**: Graceful handling of failed geocoding attempts
+- Interactive polyline showing complete route path
+- Numbered markers for each stop
+- Click markers to view customer details
 
 ---
 
