@@ -6,7 +6,7 @@ Tests error handling, validation, and geocoding scenarios
 import pytest
 import json
 from unittest.mock import patch, MagicMock
-from app import app, geocode_postcode, optimize_route
+from app import app, geocode_postcode, optimize_route, validate_postcode_format
 import pandas as pd
 
 
@@ -61,6 +61,58 @@ def mock_customers():
     ])
 
 
+class TestValidatePostcodeFormat:
+    """Tests for validate_postcode_format function"""
+    
+    def test_valid_uk_postcode(self):
+        """Test validation of valid UK postcode"""
+        is_valid, reason = validate_postcode_format('SW1A 1AA')
+        assert is_valid is True
+        assert reason is None
+    
+    def test_valid_uk_postcode_no_space(self):
+        """Test validation of valid UK postcode without space"""
+        is_valid, reason = validate_postcode_format('SW1A1AA')
+        assert is_valid is True
+        assert reason is None
+    
+    def test_empty_postcode(self):
+        """Test validation of empty postcode"""
+        is_valid, reason = validate_postcode_format('')
+        assert is_valid is False
+        assert 'empty' in reason.lower()
+    
+    def test_none_postcode(self):
+        """Test validation of None postcode"""
+        is_valid, reason = validate_postcode_format(None)
+        assert is_valid is False
+        assert 'empty' in reason.lower()
+    
+    def test_whitespace_only_postcode(self):
+        """Test validation of whitespace-only postcode"""
+        is_valid, reason = validate_postcode_format('   ')
+        assert is_valid is False
+        assert 'empty' in reason.lower()
+    
+    def test_too_short_postcode(self):
+        """Test validation of too short postcode"""
+        is_valid, reason = validate_postcode_format('AB')
+        assert is_valid is False
+        assert 'short' in reason.lower()
+    
+    def test_too_long_postcode(self):
+        """Test validation of too long postcode"""
+        is_valid, reason = validate_postcode_format('A' * 20)
+        assert is_valid is False
+        assert 'long' in reason.lower()
+    
+    def test_invalid_characters_postcode(self):
+        """Test validation of postcode with invalid characters"""
+        is_valid, reason = validate_postcode_format('SW1A!1AA')
+        assert is_valid is False
+        assert 'invalid characters' in reason.lower()
+
+
 class TestGeocodePostcode:
     """Tests for geocode_postcode function"""
     
@@ -99,6 +151,27 @@ class TestGeocodePostcode:
         
         geocode_postcode.cache_clear()
         result = geocode_postcode('SW1A 1AA', 'UK')
+        
+        assert result is None
+    
+    def test_geocode_empty_postcode(self):
+        """Test geocoding with empty postcode"""
+        geocode_postcode.cache_clear()
+        result = geocode_postcode('', 'UK')
+        
+        assert result is None
+    
+    def test_geocode_invalid_format(self):
+        """Test geocoding with invalid postcode format"""
+        geocode_postcode.cache_clear()
+        result = geocode_postcode('AB', 'UK')  # Too short
+        
+        assert result is None
+    
+    def test_geocode_invalid_characters(self):
+        """Test geocoding with invalid characters in postcode"""
+        geocode_postcode.cache_clear()
+        result = geocode_postcode('SW1A!1AA', 'UK')
         
         assert result is None
 
@@ -306,6 +379,33 @@ class TestRouteOptimizeGeocoding:
         assert 'error' in data
         assert data['valid_waypoints'] == 1
         assert data['required_waypoints'] == 2
+        # Check for new geocoding_stats field
+        assert 'geocoding_stats' in data
+        assert data['geocoding_stats']['total_attempted'] == 3
+        assert data['geocoding_stats']['successful'] == 1
+        assert data['geocoding_stats']['failed'] == 2
+    
+    @patch('app.geocode_postcode')
+    @patch('app.load_customers')
+    def test_error_response_includes_formatted_output(self, mock_load, mock_geocode, client, mock_customers):
+        """Test that error response includes formatted failure information"""
+        mock_load.return_value = mock_customers
+        
+        # All geocoding fails
+        mock_geocode.return_value = None
+        
+        response = client.post('/api/route/optimize',
+                             json={'customer_ids': [0, 1, 2]})
+        
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'failed_customers' in data
+        assert 'failed_customers_formatted' in data
+        assert len(data['failed_customers']) == 3
+        # Check that formatted output contains company names
+        assert 'Test Company 1' in data['failed_customers_formatted']
+        assert 'Test Company 2' in data['failed_customers_formatted']
+        assert 'Test Company 3' in data['failed_customers_formatted']
 
 
 class TestRouteOptimizeSuccess:

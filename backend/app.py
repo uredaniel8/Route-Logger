@@ -187,19 +187,61 @@ def save_customers(df: pd.DataFrame):
     df.to_csv(DATA_FILE, index=False)
 
 
+def validate_postcode_format(postcode):
+    """
+    Validate basic postcode format.
+    Returns (is_valid, reason) tuple.
+    """
+    if not postcode:
+        return False, "Postcode is empty"
+    
+    postcode = postcode.strip()
+    if not postcode:
+        return False, "Postcode is empty after trimming whitespace"
+    
+    # Check for minimum reasonable length
+    if len(postcode) < 3:
+        return False, f"Postcode too short (length: {len(postcode)})"
+    
+    # Check for maximum reasonable length
+    if len(postcode) > 15:
+        return False, f"Postcode too long (length: {len(postcode)})"
+    
+    # Check if postcode contains only valid characters (alphanumeric, spaces, hyphens)
+    if not all(c.isalnum() or c.isspace() or c == '-' for c in postcode):
+        return False, "Postcode contains invalid characters"
+    
+    return True, None
+
+
 @lru_cache(maxsize=1000)
 def geocode_postcode(postcode, country="UK"):
-    """Geocode a postcode to get latitude and longitude"""
+    """
+    Geocode a postcode to get latitude and longitude.
+    
+    Args:
+        postcode: The postcode to geocode
+        country: The country code (default: "UK")
+    
+    Returns:
+        Tuple of (latitude, longitude) if successful, None otherwise
+    """
+    # Validate postcode format before attempting geocoding
+    is_valid, validation_reason = validate_postcode_format(postcode)
+    if not is_valid:
+        app.logger.warning(f"Postcode validation failed for '{postcode}' ({country}): {validation_reason}")
+        return None
+    
     try:
         # Attempt geocoding with the provided postcode and country
         location = geolocator.geocode(f"{postcode}, {country}")
         if location:
-            app.logger.info(f"Successfully geocoded {postcode}, {country} to {location.latitude}, {location.longitude}")
+            app.logger.info(f"Successfully geocoded '{postcode}' ({country}) to {location.latitude}, {location.longitude}")
             return (location.latitude, location.longitude)
         else:
-            app.logger.warning(f"Geocoding returned no results for postcode: {postcode}, {country}")
+            app.logger.warning(f"Geocoding service returned no results for postcode: '{postcode}' ({country})")
     except Exception as e:
-        app.logger.error(f"Geocoding error for {postcode}, {country}: {str(e)}", exc_info=True)
+        app.logger.error(f"Geocoding error for '{postcode}' ({country}): {str(e)}", exc_info=True)
     return None
 
 
@@ -472,11 +514,18 @@ def optimize_route():
     # Build waypoints list with detailed error tracking
     waypoints = []
     geocoding_errors = []
+    geocoding_stats = {
+        "total_attempted": 0,
+        "successful": 0,
+        "failed": 0
+    }
     
     # Add start postcode if provided
     if start_postcode:
+        geocoding_stats["total_attempted"] += 1
         start_coords = geocode_postcode(start_postcode, data.get("start_country", "UK"))
         if not start_coords:
+            geocoding_stats["failed"] += 1
             error_msg = f"Could not geocode start postcode: '{start_postcode}'"
             app.logger.warning(f"{error_msg}. Country: {data.get('start_country', 'UK')}")
             geocoding_errors.append({
@@ -485,6 +534,7 @@ def optimize_route():
                 "country": data.get("start_country", "UK")
             })
         else:
+            geocoding_stats["successful"] += 1
             waypoints.append(start_coords)
     
     # Add customer waypoints
@@ -492,11 +542,14 @@ def optimize_route():
     for customer in customers:
         customer_postcode = customer.get("postcode", "")
         customer_country = customer.get("country", "UK")
+        geocoding_stats["total_attempted"] += 1
         coords = geocode_postcode(customer_postcode, customer_country)
         if coords:
+            geocoding_stats["successful"] += 1
             waypoints.append(coords)
         else:
-            app.logger.warning(f"Could not geocode customer postcode: {customer_postcode}, {customer_country} for {customer.get('company', 'Unknown')}")
+            geocoding_stats["failed"] += 1
+            app.logger.warning(f"Could not geocode customer postcode: '{customer_postcode}' ({customer_country}) for {customer.get('company', 'Unknown')}")
             failed_customers.append({
                 "company": customer.get("company", "Unknown"),
                 "postcode": customer_postcode,
@@ -505,8 +558,10 @@ def optimize_route():
     
     # Add end postcode if provided
     if end_postcode:
+        geocoding_stats["total_attempted"] += 1
         end_coords = geocode_postcode(end_postcode, data.get("end_country", "UK"))
         if not end_coords:
+            geocoding_stats["failed"] += 1
             error_msg = f"Could not geocode end postcode: '{end_postcode}'"
             app.logger.warning(f"{error_msg}. Country: {data.get('end_country', 'UK')}")
             geocoding_errors.append({
@@ -515,37 +570,96 @@ def optimize_route():
                 "country": data.get("end_country", "UK")
             })
         else:
+            geocoding_stats["successful"] += 1
             waypoints.append(end_coords)
+    
+    # Log geocoding statistics
+    app.logger.info(
+        f"Geocoding complete - Total: {geocoding_stats['total_attempted']}, "
+        f"Successful: {geocoding_stats['successful']}, "
+        f"Failed: {geocoding_stats['failed']}"
+    )
 
     # Check if we have enough valid waypoints after geocoding
     if len(waypoints) < 2:
+        # Build a comprehensive error message
+        error_summary = []
+        if geocoding_stats["failed"] > 0:
+            success_rate = (geocoding_stats["successful"] / geocoding_stats["total_attempted"]) * 100 if geocoding_stats["total_attempted"] > 0 else 0
+            error_summary.append(
+                f"Geocoding succeeded for {geocoding_stats['successful']} out of {geocoding_stats['total_attempted']} locations ({success_rate:.0f}%)"
+            )
+        
         error_response = {
             "error": "Need at least 2 valid locations after geocoding",
             "details": "Some postcodes could not be geocoded. Please verify the postcodes are valid and try again.",
             "valid_waypoints": len(waypoints),
-            "required_waypoints": 2
+            "required_waypoints": 2,
+            "geocoding_stats": geocoding_stats
         }
         
+        if error_summary:
+            error_response["summary"] = error_summary
+        
         # Add specific details about what failed
+        suggestions = []
+        
         if geocoding_errors:
             error_response["failed_postcodes"] = geocoding_errors
-            error_response["suggestions"] = [
+            # Format failed postcodes in a user-friendly way
+            failed_list = []
+            for err in geocoding_errors:
+                failed_list.append(f"- {err['value']} ({err['country']})")
+            
+            if failed_list:
+                error_response["failed_postcodes_formatted"] = "\n".join(failed_list)
+            
+            suggestions.extend([
                 "Verify the postcode format is correct (e.g., 'SW1A 1AA' for UK)",
                 "Ensure the country is specified correctly",
                 "Try using a different postcode or customer location"
-            ]
+            ])
         
         if failed_customers:
             error_response["failed_customers"] = failed_customers
-            error_response["suggestions"] = error_response.get("suggestions", []) + [
+            # Format failed customers in a user-friendly way
+            failed_customer_list = []
+            for fc in failed_customers:
+                failed_customer_list.append(f"- {fc['company']}: {fc['postcode']} ({fc['country']})")
+            
+            if failed_customer_list:
+                error_response["failed_customers_formatted"] = "\n".join(failed_customer_list)
+            
+            suggestions.extend([
                 "Check customer postcode data for accuracy",
                 "Consider selecting different customers with valid postcodes"
-            ]
+            ])
         
-        app.logger.error(f"Route optimization failed: insufficient valid waypoints. Details: {error_response}")
+        if suggestions:
+            error_response["suggestions"] = suggestions
+        
+        # Create a formatted error message for logging
+        log_msg_parts = [
+            f"Route optimization failed: insufficient valid waypoints ({len(waypoints)}/{geocoding_stats['total_attempted']})"
+        ]
+        
+        if geocoding_errors:
+            log_msg_parts.append(f"\nFailed postcodes: {', '.join([e['value'] for e in geocoding_errors])}")
+        
+        if failed_customers:
+            log_msg_parts.append(f"\nFailed customers: {', '.join([fc['company'] for fc in failed_customers])}")
+        
+        app.logger.error(' '.join(log_msg_parts))
         return jsonify(error_response), 400
 
     optimized_order, legs = optimize_route_with_google_maps(waypoints, GOOGLE_MAPS_API_KEY)
+    
+    # Log successful route optimization
+    app.logger.info(
+        f"Route optimization successful - {len(waypoints)} waypoints, "
+        f"{len(customers)} customers, "
+        f"Geocoding success rate: {(geocoding_stats['successful'] / geocoding_stats['total_attempted'] * 100):.0f}%"
+    )
 
     # Reconstruct optimized customer list based on the order
     if optimized_order and len(customers) > 0:
