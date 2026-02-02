@@ -368,7 +368,3 @@ class TestRouteOptimizeSuccess:
         data = json.loads(response.data)
         assert data['start_postcode'] == 'SW1A 1AA'
         assert data['end_postcode'] == 'EC1A 1BB'
-
-
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])

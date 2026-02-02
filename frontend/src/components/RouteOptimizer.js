@@ -11,6 +11,9 @@ const routeMapContainerStyle = {
   marginTop: '20px',
 };
 
+// UK postcode validation regex (basic format check)
+const UK_POSTCODE_REGEX = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/i;
+
 function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [optimizedRoute, setOptimizedRoute] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,14 +26,13 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
 
   const handleOptimizeRoute = async () => {
     // Validate postcodes format before sending request (basic validation)
-    const postcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/i;
     
-    if (startPostcode && !postcodeRegex.test(startPostcode.trim())) {
+    if (startPostcode && !UK_POSTCODE_REGEX.test(startPostcode.trim())) {
       setError('Start postcode format appears invalid. UK postcodes should follow the format: SW1A 1AA');
       return;
     }
     
-    if (endPostcode && !postcodeRegex.test(endPostcode.trim())) {
+    if (endPostcode && !UK_POSTCODE_REGEX.test(endPostcode.trim())) {
       setError('End postcode format appears invalid. UK postcodes should follow the format: SW1A 1AA');
       return;
     }
