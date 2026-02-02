@@ -22,6 +22,19 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [mapCenter, setMapCenter] = useState({ lat: 56.4907, lng: -4.2026 });
 
   const handleOptimizeRoute = async () => {
+    // Validate postcodes format before sending request (basic validation)
+    const postcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$/i;
+    
+    if (startPostcode && !postcodeRegex.test(startPostcode.trim())) {
+      setError('Start postcode format appears invalid. UK postcodes should follow the format: SW1A 1AA');
+      return;
+    }
+    
+    if (endPostcode && !postcodeRegex.test(endPostcode.trim())) {
+      setError('End postcode format appears invalid. UK postcodes should follow the format: SW1A 1AA');
+      return;
+    }
+    
     // Count total waypoints: customers + optional start/end postcodes
     const totalWaypoints = selectedCustomers.length + (startPostcode ? 1 : 0) + (endPostcode ? 1 : 0);
     
@@ -40,10 +53,10 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
 
       // Add start and end postcodes if provided
       if (startPostcode) {
-        requestBody.start_postcode = startPostcode;
+        requestBody.start_postcode = startPostcode.trim();
       }
       if (endPostcode) {
-        requestBody.end_postcode = endPostcode;
+        requestBody.end_postcode = endPostcode.trim();
       }
 
       const response = await fetch(`${API_URL}/route/optimize`, {
@@ -53,8 +66,37 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to optimize route: ${errorText}`);
+        const errorData = await response.json();
+        
+        // Format enhanced error messages
+        let errorMessage = errorData.error || 'Failed to optimize route';
+        
+        if (errorData.details) {
+          errorMessage += '\n\n' + errorData.details;
+        }
+        
+        if (errorData.failed_postcodes && errorData.failed_postcodes.length > 0) {
+          errorMessage += '\n\nFailed to geocode postcodes:';
+          errorData.failed_postcodes.forEach(fp => {
+            errorMessage += `\n- ${fp.value} (${fp.country})`;
+          });
+        }
+        
+        if (errorData.failed_customers && errorData.failed_customers.length > 0) {
+          errorMessage += '\n\nFailed to geocode customer postcodes:';
+          errorData.failed_customers.forEach(fc => {
+            errorMessage += `\n- ${fc.company}: ${fc.postcode} (${fc.country})`;
+          });
+        }
+        
+        if (errorData.suggestions && errorData.suggestions.length > 0) {
+          errorMessage += '\n\nSuggestions:';
+          errorData.suggestions.forEach(suggestion => {
+            errorMessage += '\n• ' + suggestion;
+          });
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -180,7 +222,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
                 onChange={(e) => setStartPostcode(e.target.value)}
                 className="postcode-input"
               />
-              <small>Leave empty to start from the first customer</small>
+              <small>Leave empty to start from the first customer. Use valid UK postcode format (e.g., SW1A 1AA)</small>
             </div>
             
             <div className="config-field">
@@ -193,7 +235,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
                 onChange={(e) => setEndPostcode(e.target.value)}
                 className="postcode-input"
               />
-              <small>Leave empty to end at the last customer</small>
+              <small>Leave empty to end at the last customer. Use valid UK postcode format (e.g., SW1A 1AA)</small>
             </div>
           </div>
 
@@ -233,7 +275,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
           <h3>Optimized Route</h3>
           
           {error && (
-            <div className="error-message">{error}</div>
+            <div className="error-message" style={{ whiteSpace: 'pre-wrap' }}>{error}</div>
           )}
 
           {optimizedRoute ? (
