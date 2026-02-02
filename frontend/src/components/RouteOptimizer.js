@@ -153,7 +153,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
           
           <button 
             onClick={handleOptimizeRoute}
-            disabled={selectedCustomers.length < 1 || loading}
+            disabled={(selectedCustomers.length + (startPostcode ? 1 : 0) + (endPostcode ? 1 : 0)) < 2 || loading}
             className="optimize-btn"
           >
             {loading ? 'Optimizing...' : 'Optimize Route'}

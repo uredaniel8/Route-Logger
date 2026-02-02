@@ -450,7 +450,7 @@ def optimize_route():
 
     df = load_customers()
     if len(customer_ids) == 0 and not start_postcode:
-        return jsonify({"error": "No customers selected and no start postcode provided"}), 400
+        return jsonify({"error": "Need at least 2 total waypoints from customers and/or start/end postcodes"}), 400
 
     # Get selected customers
     customers = df.iloc[customer_ids].to_dict("records") if customer_ids else []
