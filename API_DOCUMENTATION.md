@@ -152,6 +152,70 @@ company,account_number,country,postcode,status,current_spend,tagged_customers,mu
 
 ---
 
+### Import Customers from Raw JSON
+
+Import multiple customers from raw JSON data.
+
+**Endpoint**: `POST /api/customers/import/raw`
+
+**Request Body**: JSON array of customer objects
+```json
+[
+  {
+    "company": "Test Company 1",
+    "account_number": "TEST001",
+    "country": "UK",
+    "postcode": "SW1A 1AA",
+    "status": "Active",
+    "current_spend": 15000,
+    "tagged_customers": "Standard",
+    "multi_site": "No",
+    "area_code": "SW",
+    "date_of_last_visit": "2024-02-01",
+    "visit_frequency": 30
+  },
+  {
+    "company": "Test Company 2",
+    "account_number": "TEST002",
+    "country": "UK",
+    "postcode": "EC1A 1BB",
+    "status": "Active",
+    "current_spend": 25000,
+    "tagged_customers": "Premium",
+    "multi_site": "Yes",
+    "area_code": "EC",
+    "date_of_last_visit": "2024-01-15",
+    "visit_frequency": 45
+  }
+]
+```
+
+**Response**:
+```json
+{
+  "message": "Imported 2 customers successfully"
+}
+```
+
+**Error Responses**:
+```json
+{
+  "error": "No data provided"
+}
+```
+```json
+{
+  "error": "Data must be an array of customer objects"
+}
+```
+```json
+{
+  "error": "Data array is empty"
+}
+```
+
+---
+
 ### Export Customers to CSV
 
 Export all customers to a CSV file.

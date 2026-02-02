@@ -200,6 +200,28 @@ def import_customers():
         return jsonify({'error': str(e)}), 400
 
 
+@app.route('/api/customers/import/raw', methods=['POST'])
+def import_customers_raw():
+    """Import customers from raw JSON data"""
+    data = request.json
+    
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+    
+    if not isinstance(data, list):
+        return jsonify({'error': 'Data must be an array of customer objects'}), 400
+    
+    if len(data) == 0:
+        return jsonify({'error': 'Data array is empty'}), 400
+    
+    try:
+        df = pd.DataFrame(data)
+        save_customers(df)
+        return jsonify({'message': f'Imported {len(df)} customers successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
 @app.route('/api/customers/export', methods=['GET'])
 def export_customers():
     """Export customers to CSV file"""
