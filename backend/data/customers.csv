@@ -1,166 +1,166 @@
-company,account_number,country,postcode,status,current_spend,tagged_customers,Multi Site?,Area Code,date_of_last_visit,visit_frequency,next_due_date,Urgency
-Aberdeen Leisure & Industrial Services,ABERD101,Scotland,AB14 0WD,Bronze,457.32,False,False,1,,84,27/04/2026,Future
-Buchan Power Tools,NMBSL101,Scotland,AB42 1BN,Silver,3222.9,False,False,1,,56,30/03/2026,Future
-C & L Supplies Limited,C&LSU101,Scotland,AB42 1DF,Gold,25519.2,False,False,1,,30,04/03/2026,Future
-Caley Office (Print & Stat. Ltd),CALEY101,Scotland,AB11 8BJ,Silver,1834.8,True,True,1,,30,04/03/2026,Future
-Gibb Group (Aberdeen),NMBSL101,Scotland,AB23 8JX,Bronze,681.9,True,False,1,,30,04/03/2026,Future
-GPH Builders Ellon),NMBSL101,Scotland,AB32 6SY,Silver,1070.8,False,True,1,,56,30/03/2026,Future
-GPH Builders Ellon),NMBSL101,Scotland,AB39 2NH,Silver,1070.8,False,True,1,,56,30/03/2026,Future
-GPH Builders Ellon),NMBSL101,Scotland,AB41 9RD,Silver,1070.8,False,True,1,,56,30/03/2026,Future
-GPH Builders Ellon),NMBSL101,Scotland,AB51 5QW,Silver,1070.8,False,True,1,,56,30/03/2026,Future
-Highland Industrial Supplies (Group Account),HIGHL101,Scotland,AB53 4AG,Platinum,84708.55,False,True,1,,30,04/03/2026,Future
-I&K Supplies,NMBSL101,Scotland,AB43 9DP,Bronze,897.5,False,False,1,,84,27/04/2026,Future
-James Mutch Limited,JAMES105,Scotland,AB25 5SN,Bronze,374.6,False,False,1,,84,27/04/2026,Future
-Lah Supplies Limited,LAHSU101,Scotland,AB51 5DR,Iron,0.0,True,False,1,,30,04/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,AB12 3LE,Bronze,569.2,True,True,1,,30,04/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,AB51 5GT,Bronze,569.2,True,True,1,,30,04/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,AB53 5PJ,Bronze,569.2,True,True,1,,30,04/03/2026,Future
-Nortruck Services Limited,NORTR101,Scotland,AB12 3JZ,Silver,1082.4,False,False,1,,56,30/03/2026,Future
-Red Wings UK Ltd (Used to beK & L Ross Ltd),REDWI101,Scotland,AB12 3LW,Silver,1298.5,False,False,1,,56,30/03/2026,Future
-Ross Safety and Survival Limited,ROSSS101,Scotland,AB12 3GW,Silver,8197.0,False,False,1,,56,30/03/2026,Future
-RS Machinery Group LTD,RSMAC101,Scotland,AB23 8JS,Silver,4563.8,False,True,1,,56,30/03/2026,Future
-Scots Bearings (Group Account),SCOTS101,Scotland,AB21 0GG,Silver,8645.8,False,False,1,,56,30/03/2026,Future
-Tool Den (Duo Tool),DUOTO101,Scotland,AB41 8NW,Platinum,74797.0,False,False,1,,30,04/03/2026,Future
-Waverley Cutting Tools,WAVER102,Scotland,AB12 4XX,Silver,3442.7,False,True,1,,56,30/03/2026,Future
-WB Alloy Welding (Group Account),WBALL101,Scotland,AB12 3LY,Silver,7633.5,False,True,1,,56,30/03/2026,Future
-WB Alloy Welding (Group Account),WBALL101,Scotland,AB12 3QL,Silver,7633.5,False,False,1,,56,30/03/2026,Future
-Angus & Perthshire Bearing Ltd,ANGUS101,Scotland,PH1 3JE,Silver,2260.08,False,False,2,,56,30/03/2026,Future
-Highland Industrial Supplies (Group Account),HIGHL101,Scotland,DD3 7NU,Platinum,84708.55,False,True,2,,30,04/03/2026,Future
-Highland Industrial Supplies (Group Account),HIGHL101,Scotland,PH1 3XU,Platinum,84708.55,False,True,2,,30,04/03/2026,Future
-Highland Industrial Supplies (Group Account),HIGHL101,Scotland,PH33 6PR,Platinum,84708.55,False,True,2,,30,04/03/2026,Future
-R&M Bearings,NMBSL101,Scotland,DD2 3QH,Bronze,811.9,False,False,2,,84,27/04/2026,Future
-Scots Bearings (Group Account),SCOTS101,Scotland,DD2 3SP,Silver,8645.8,False,False,2,,56,30/03/2026,Future
-Scots Bearings (Group Account),SCOTS101,Scotland,DD2 4UT,Silver,8645.8,False,True,2,,56,30/03/2026,Future
-Universal Engineering Tools,UNIVE103,Scotland,DD1 4JG,Silver,1746.72,False,False,2,,56,30/03/2026,Future
-Diamond Industrial Supply Co,DIAMO101,Scotland,FK1 4QF,Bronze,126.4,True,False,3,,30,04/03/2026,Future
-Lion Safety,SAFET102,Scotland,FK3 9XB,Platinum,91390.0,False,False,3,,30,04/03/2026,Future
-Philip Industrial,NMBSL101,Scotland,FK3 8YD,Silver,2303.4,False,False,3,,56,30/03/2026,Future
-R Jackson Engineering Distributors,JACKS101,Scotland,FK5 3NS,Silver,1530.0,False,False,3,,56,30/03/2026,Future
-Scott Direct (Grangemouth),UNITE103,Scotland,FK3 8TR,Bronze,244.0,True,False,3,,30,04/03/2026,Future
-Unico Limited,UNICO101,Scotland,FK2 8HT,Gold,20686.78,True,False,3,,30,04/03/2026,Future
-Clarik Engineering,CLARI101,Scotland,KY11 2SF,Gold,26460.5,False,False,4,,30,04/03/2026,Future
-Cromwell Tools (Fife),CROMW101,Scotland,KY7 4PF,Bronze,634.0,False,False,4,,84,27/04/2026,Future
-Protool Engineering Supplies LTD,PROTO102,Scotland,KY11 9JN,Silver,2442.2,False,False,4,,56,30/03/2026,Future
-A.B.T Machine & Tooling,UNITE103,Scotland,G13 1EF,Silver,1645.5,False,False,5,,56,30/03/2026,Future
-Alex Mather,NMBSL101,Scotland,G84 7DG,Silver,2207.0,False,False,5,,56,30/03/2026,Future
-Aspire Industrial Services,ASPIR101,Scotland,G52 4LT,Silver,9623.98,False,False,5,,56,30/03/2026,Future
-Bills Tool Store Limited,BILLS101,Scotland,G40 2LD,Bronze,33.4,False,False,5,,84,27/04/2026,Future
-Caley Office (Print & Stat. Ltd),CALEY101,Scotland,G41 1NG,Silver,1834.8,True,True,5,,30,04/03/2026,Future
-Cleaning & Wiping Supplies LTD,CLEAN101,Scotland,G74 1PW,Gold,25334.86,True,False,5,,30,04/03/2026,Future
-Clow Group,CLOWG101,Scotland,G40 2QR,Silver,2670.5,False,False,5,,56,30/03/2026,Future
-Diverse Products Ltd,DIVER101,Scotland,G51 3BA,Silver,2312.7,False,False,5,,56,30/03/2026,Future
-DL Industrial Supplies Limited,DLIND101,Scotland,G74 5LW,Gold,16755.08,False,False,5,,30,04/03/2026,Future
-Engineering Supply Co Ltd,ENGIN103,Scotland,G46 8TU,Silver,1487.2,False,False,5,,56,30/03/2026,Future
-Fastenal Europe Limited (Glasgow),FASTE103,Scotland,G69 6GA,Silver,3105.0,False,False,5,,56,30/03/2026,Future
-JRS Industrial Supplies Ltd,JRSIN101,Scotland,G75 0RH,Bronze,198.3,False,False,5,,84,27/04/2026,Future
-Kilrevin Holdings Ltd t/a Paksol,KILRE101,Scotland,G3 8EX,Silver,4534.54,False,False,5,,56,30/03/2026,Future
-LSK Supplies,LSKSU101,Scotland,G22 6JJ,Bronze,556.1,True,True,5,,30,04/03/2026,Future
-PF Cuscack,PFCUS001,Scotland,G32 8RH,Iron,0.0,False,False,5,,84,27/04/2026,Future
-Premier Welding Limited,PREMI102,Scotland,G52 4NQ,Gold,18230.24,False,False,5,,30,04/03/2026,Future
-Scots Bearings (Group Account),SCOTS101,Scotland,G68 9HN,Silver,8645.8,False,False,5,,56,30/03/2026,Future
-Suresafe Protection Ltd,SURES101,Scotland,G67 2BA,Silver,1399.8,True,False,5,,30,04/03/2026,Future
-Waveley Cutting Tools,UNIVE103,Scotland,G52 4XX,Silver,3442.7,False,True,5,,56,30/03/2026,Future
-WB Alloy Welding (Group Account),WBALL101,Scotland,G52 4LA,Silver,7633.5,False,False,5,,56,30/03/2026,Future
-BHC Ltd,NMBSL101,Scotland,ML11 8HS,Silver,2203.2,False,False,6,,56,30/03/2026,Future
-Cromwell Tools (Bellshill),CROMW101,Scotland,ML4 3LU,Platinum,50093.9,False,False,6,,30,04/03/2026,Future
-Gray Workshop Supplies,GRAYW101,Scotland,ML5 2JG,Silver,2965.8,False,False,6,,56,30/03/2026,Future
-Mannering Industrial Limited,MANNE102,Scotland,ML4 3LR,Silver,2919.5,False,False,6,,56,30/03/2026,Future
-Scotcast Building Supplies,NMBSL101,Scotland,ML5 4RY,Silver,1080.0,False,False,6,,56,30/03/2026,Future
-Scotech Welding Supplies Limited,SCOTE101,Scotland,ML4 3NW,Silver,2524.6,False,False,6,,56,30/03/2026,Future
-Toolstop limited t/a Toolsaver,TOOLS101,Scotland,ML4 3NP,Gold,18559.5,False,False,6,,30,04/03/2026,Future
-Workwear & PPE Supplies,WORKW104,Scotland,ML6 7UD,Iron,0.0,False,False,6,,84,27/04/2026,Future
-Bearing Boys,BEARI101,Scotland,KA8 9DJ,Bronze,619.9,False,False,7,,84,27/04/2026,Future
-Caldwell Wright Company (Group Account),NMBSL101,Scotland,KA8 8BQ,Iron,0.0,False,False,7,,84,27/04/2026,Future
-Engineering Tools & Consumables (ETC),ENGIN104,Scotland,KA1 3DL,Silver,3463.1,False,False,7,,56,30/03/2026,Future
-Gaws Goods LTD,GAWSG101,Scotland,KA12 0QN,Bronze,609.0,False,False,7,,84,27/04/2026,Future
-Mathieson Limited,MATHI101,Scotland,KA4 8LE,Bronze,612.0,False,False,7,,84,27/04/2026,Future
-Prestwick Aircrat Tooling Ltd,PREST101,Scotland,KA9 2PT,Silver,3459.4,False,False,7,,56,30/03/2026,Future
-Scots Bearings (Group Account),SCOTS101,Scotland,KA11 4HR,Silver,8645.8,False,False,7,,56,30/03/2026,Future
-Tower tools and Equipment Ltd,TOWER102,Scotland,KA2 9AF,Silver,4232.0,False,False,7,,56,30/03/2026,Future
-TPS Weldtech Limited,WELDT001,Scotland,KA1 5LE,Silver,3302.0,False,False,7,,56,30/03/2026,Future
-JW Grant,NMBSL101,Scotland,PA3 2EH,Iron,0.0,False,False,8,,84,27/04/2026,Future
-B & N Robertson ltd/ Billys power tools,TROYU101,Scotland,DG1 3JZ,Iron,0.0,False,False,9,,84,27/04/2026,Future
-McDermid Supply Company,NMBSL101,Scotland,DG1 1PG,Silver,4784.2,False,False,9,,56,30/03/2026,Future
-Akro Plant,NMBSL101,Scotland,EH54 5EG,Silver,4107.8,False,False,10,,56,30/03/2026,Future
-Caley Office (Print & Stat. Ltd),CALEY101,Scotland,EH6 7BN,Silver,1834.8,True,True,10,,30,04/03/2026,Future
-Dobies Heat Centre,NMBSL101,Scotland,EH53 OLF,Silver,1698.8,False,False,10,,56,30/03/2026,Future
-Maxam,MAXAM101,Scotland,EH11 4DZ,Silver,1904.34,False,False,10,,56,30/03/2026,Future
-Agriparts Borders,NMBSL101,Scotland,TD5 8DL,Silver,1852.9,False,False,11,,56,30/03/2026,Future
-J.K.T Engineering & Fabrication Ltd,JKTEN101,Scotland,TD15 1NX,Silver,1066.0,False,False,11,,56,30/03/2026,Future
-Thorburn Group,THORB101,Scotland,TD15 1TQ,Silver,4407.0,False,False,11,,56,30/03/2026,Future
-Avco Industrial  Supplies Ltd,AVCOI101,Scotland,IV6 7UA,Silver,3788.4,False,False,12,,56,30/03/2026,Future
-Highland Industrial Supplies (Group Account),HIGHL101,Scotland,IV1 1SG,Platinum,84708.55,False,True,12,,30,04/03/2026,Future
-Highland Industrial Supplies (Group Account),HIGHL101,Scotland,IV30 6AG,Platinum,84708.55,False,True,12,,30,04/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,IV1 1SN,Bronze,569.2,True,True,12,,30,04/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,IV30 6AF,Bronze,569.2,True,True,12,,30,04/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,IV51 9HD,Bronze,569.2,True,True,12,,30,04/03/2026,Future
-Scots Bearings (Group Account),SCOTS101,Scotland,IV1 1SY,Silver,8645.8,False,False,12,,56,30/03/2026,Future
-SER Supplies Limited,SERSU101,Scotland,IV18 0SB,Gold,15160.2,False,False,12,,30,04/03/2026,Future
-Auto Moto Factory LTD,AUTOM102,Northern Ireland,BT92 9BL,Silver,1270.17,False,False,13,,56,30/03/2026,Future
-Auto Supplies,AUTOS101,Northern Ireland,BT34 2DE,Silver,1341.7,False,False,13,,56,30/03/2026,Future
-Autobits Motor Store Limited,AUTOB101,Northern Ireland,BT61 7NG,Silver,2260.2,False,False,13,,56,30/03/2026,Future
-Automotive Supplies,AUTOM101,Northern Ireland,BT47 9PW,Iron,0.0,False,False,13,,84,27/04/2026,Future
-Belfast Ship Stores,BELFA101,Northern Ireland,BT3 9BJ,Silver,1008.0,False,False,13,,56,30/03/2026,Future
-BMG Hardware,NMBSL101,Northern Ireland,BT93 3DE,Bronze,846.5,False,False,13,,84,27/04/2026,Future
-Campbell Engineering Supplies,CAMPB102,Northern Ireland,BT17 9HS,Bronze,517.9,False,False,13,,84,27/04/2026,Future
-Carnroe Supplies Limited,CARNR101,Northern Ireland,BT51 5UZ,Silver,3231.9,False,False,13,,56,30/03/2026,Future
-Clenz Ireland Ltd,PROFORMA,Northern Ireland,BT44 0SN,Iron,0.0,False,False,13,,84,27/04/2026,Future
-Dekah NI Limited,DEKAH102,Northern Ireland,BT3 9LE,Iron,0.0,False,False,13,,84,27/04/2026,Future
-E A Martin,EAMAR101,Northern Ireland,BT51 5XR,Silver,3825.0,False,False,13,,56,30/03/2026,Future
-E McIntyre (Group Account),MCINT101,Northern Ireland,BT51 5TB,Bronze,219.4,False,False,13,,84,27/04/2026,Future
-Enquip Supplies,ENQUI101,Northern Ireland,BT47 3XX,Silver,1548.1,False,False,13,,56,30/03/2026,Future
-Fane Valley Stores Ltd,FANEV101,Northern Ireland,BT67 0LT,Gold,12835.6,False,True,13,,30,04/03/2026,Future
-Fastenal Europe Limited (Ballymena),FASTE103,Northern Ireland,BT42 4QJ,Gold,42092.9,False,False,13,,30,04/03/2026,Future
-Fastenal Europe Limited (Dungannon),FASTE103,Northern Ireland,BT71 7EF,Silver,1756.4,False,False,13,,56,30/03/2026,Future
-Fyfes Vehicle & Engineering Supplies Ltd,FYFES101,Northern Ireland,BT42 3HB,Silver,1555.6,False,True,13,,56,30/03/2026,Future
-Henry R Ayton,HENRY101,Northern Ireland,BT17 9HS,Silver,2925.3,False,False,13,,56,30/03/2026,Future
-Hillcrest Wholesale Ltd,HILLC101,Northern Ireland,BT45 8HT,Silver,1502.1,False,False,13,,56,30/03/2026,Future
-Hydepark Ireland Ltd,HYDEP101,Northern Ireland,BT41 4NT,Gold,35807.5,False,False,13,,30,04/03/2026,Future
-Island Bawn,NMBSL101,Northern Ireland,BT41 2BA,Iron,0.0,False,False,13,,84,27/04/2026,Future
-J Mcaleer & Sons LTD,JMCAL101,Northern Ireland,BT79 0QW,Iron,0.0,False,False,13,,84,27/04/2026,Future
-Kennedy & Morrison,NMBSL101,Northern Ireland,BT12 6QF,Silver,1413.6,False,False,13,,56,30/03/2026,Future
-Lindsay Protective Clothing,LINDS101,Northern Ireland,BT52 2NL,Silver,4212.0,False,False,13,,56,30/03/2026,Future
-MOL Tools & Abbrasives LTD,MOLTO101,Northern Ireland,BT46 5TE,Silver,7042.0,False,False,13,,56,30/03/2026,Future
-Mourne Mist Bottled Water Company T/A MHS Hygiene & Workwear,MOURN101,Northern Ireland,BT34 3FN,Silver,1439.8,False,False,13,,56,30/03/2026,Future
-Norseman Safety,NORSE101,Northern Ireland,BT3 9DJ,Silver,2326.7,True,False,13,,30,04/03/2026,Future
-North Down Motor Factors Limited,NORTH105,Northern Ireland,BT3 9DJ,Silver,7541.7,False,False,13,,56,30/03/2026,Future
-O'Neill Supplies Limited,ONEIL103,Northern Ireland,BT43 7LX,Bronze,703.2,False,False,13,,84,27/04/2026,Future
-PJD Safety,PJDSA101,Northern Ireland,BT70 2NQ,Platinum,75403.55,True,False,13,,30,04/03/2026,Future
-Prosafe products Limited,PROSA101,Northern Ireland,BT36 4PT,Silver,4180.8,True,False,13,,30,04/03/2026,Future
-Safety Solutions NI Ltd,SAFET104,Northern Ireland,BT28 2RB,Gold,18957.6,False,False,13,,30,04/03/2026,Future
-Search Workshop Supplies LTD,SEARC101,Northern Ireland,BT47 2ED,Silver,9889.2,False,False,13,,56,30/03/2026,Future
-The Tool Shed,NMBSL101,Northern Ireland,BT71 4HR,Silver,2203.2,False,False,13,,56,30/03/2026,Future
-The Tool Shed,PROFORMA,Northern Ireland,BT71 4HR,Silver,1333.2,False,False,13,,56,30/03/2026,Future
-Total Consumables NI,TOTAL106,Northern Ireland,BT2 8LA,Silver,2965.8,False,False,13,,56,30/03/2026,Future
-Tradesman NI,TRADE102,Northern Ireland,BT82 8EE,Iron,0.0,False,False,13,,84,27/04/2026,Future
-WB Alloy Welding (Group Account),WBALL101,Northern Ireland,BT70 2NS,Silver,7633.5,False,False,13,,56,30/03/2026,Future
-M W Murphy & Son Ltd,MWMUR101,Southern Ireland,X91 D821,Silver,3930.0,False,False,14,,56,30/03/2026,Future
-V.S Supplier,VSSUP101,Southern Ireland,X91 RD28,Iron,0.0,False,False,14,,84,27/04/2026,Future
-V.S Tools,VSTOO101,Southern Ireland,X91 RD28,Silver,3334.78,False,False,14,,56,30/03/2026,Future
-Arc Tech Welding,ARCTE101,Southern Ireland,D15 XW7K,Silver,2803.6,False,False,15,,56,30/03/2026,Future
-Carvills Tool & Welding Limited (Southern),CARVI102,Southern Ireland,A75 DX95,Silver,2651.6,False,False,15,,56,30/03/2026,Future
-Cladai Dhun Na Ngall Teoranta Ltd,CLADA101,Southern Ireland,F92 DN88,Iron,0.0,False,False,15,,84,27/04/2026,Future
-D C Welding,DCWEL101,Southern Ireland,W91 YP5V,Iron,0.0,False,False,15,,84,27/04/2026,Future
-Dargan Tools Ltd,DARGA101,Southern Ireland,R93 TY20,Silver,4497.4,False,False,15,,56,30/03/2026,Future
-Dekah Supplies Irealnd Ltd,DEKAH101,Southern Ireland,R35 F7T3,Iron,0.0,False,False,15,,84,27/04/2026,Future
-Deltawaite Limited,DELTA101,England,LA13 0EP,Bronze,890.0,True,False,15,20/11/2025,30,20/12/2025,Overdue
-DO Sullivan Consulting Engineering Ltd,DOSUL101,Southern Ireland,Y25 RK73,Iron,0.0,False,False,15,,84,27/04/2026,Future
-Dormervale Ltd t/a M & E Supplies,DORME101,Southern Ireland,K78 K6N7,Silver,5479.2,True,False,15,,30,04/03/2026,Future
-Dublin North Proweld,DUBLI101,Southern Ireland,D11 PX98,Gold,20031.3,False,False,15,,30,04/03/2026,Future
-E.P.T Ireland Ltd,EPTIR101,Southern Ireland,R93 AH94,Gold,20619.0,True,False,15,,30,04/03/2026,Future
-Everyday Welding Supplies Limited,EVERY101,Southern Ireland,V94 R866,Gold,13913.7,False,False,15,,30,04/03/2026,Future
-Fastenal Europe Limited (Dublin),FASTE104,Southern Ireland,D10 FA06,Silver,1447.48,False,False,15,,56,30/03/2026,Future
-Fiinka Limited,FIINK101,Scotland,KA10 6QR,Silver,10647.6,False,False,15,,56,30/03/2026,Future
-Highland Industrial Supplies (Group Account),HIGHL101,Scotland,KW15 1RE,Platinum,84708.55,False,True,15,,30,04/03/2026,Future
-Inventory Supply & Management,INVEN101,Southern Ireland,D12 HX73,Silver,1256.7,False,False,15,,56,30/03/2026,Future
-JBS Group,JBSGR101,Southern Ireland,H18 X727,Silver,1740.44,True,True,15,,30,04/03/2026,Future
-Johnston & Bulman,NMBSL101,England,CA1 1TD,Bronze,993.7,False,False,15,,84,27/04/2026,Future
-KWS Kilkenny Welding Supplies Ltd,KILKE101,Southern Ireland,R95 KX72,Iron,0.0,False,False,15,,84,27/04/2026,Future
-Lewis Island Crofters Ltd,LEWIS101,Scotland,HS1 2RD,Silver,2828.2,False,False,15,,56,30/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,HS1 2RA,Bronze,569.2,True,True,15,,30,04/03/2026,Future
-MacGregor Industrial Supplies Limited,MACGR101,Scotland,KW15 1FL,Bronze,569.2,True,True,15,,30,04/03/2026,Future
-Mark John Limited,MARKJ101,Southern Ireland,D22 V668,Silver,4227.0,False,False,15,,56,30/03/2026,Future
-Maurice Doody Sales,MAURI101,Southern Ireland,V94 E704,Gold,21194.2,False,False,15,,30,04/03/2026,Future
-Thomas Graham & Sons (Group Account),THOMA101,England,CA6 4SQ,Silver,7860.52,True,True,15,19/11/2025,30,19/12/2025,Overdue
-Tool Force UK,NMBSL101,Southern Ireland,F93 AX07,Silver,4770.9,False,False,15,,56,30/03/2026,Future
-Total Consumables,TOTAL105,Southern Ireland,W34 TX29,Silver,10245.32,False,False,15,,56,30/03/2026,Future
+company,account_number,country,postcode,status,current_spend,tagged_customers,multi_site,area_code,date_of_last_visit,visit_frequency,next_due_date,urgency
+Aberdeen Leisure & Industrial Services,ABERD101,Scotland,AB14 0WD,Bronze,457.32,False,False,1,,84,2026-04-27,Future
+Buchan Power Tools,NMBSL101,Scotland,AB42 1BN,Silver,3222.9,False,False,1,,56,2026-03-30,Future
+C & L Supplies Limited,C&LSU101,Scotland,AB42 1DF,Gold,25519.2,False,False,1,,30,2026-03-04,Future
+Caley Office (Print & Stat. Ltd),CALEY101,Scotland,AB11 8BJ,Silver,1834.8,True,True,1,,30,2026-03-04,Future
+Gibb Group (Aberdeen),NMBSL101,Scotland,AB23 8JX,Bronze,681.9,True,False,1,,30,2026-03-04,Future
+GPH Builders Ellon),NMBSL101,Scotland,AB32 6SY,Silver,1070.8,False,True,1,,56,2026-03-30,Future
+GPH Builders Ellon),NMBSL101,Scotland,AB39 2NH,Silver,1070.8,False,True,1,,56,2026-03-30,Future
+GPH Builders Ellon),NMBSL101,Scotland,AB41 9RD,Silver,1070.8,False,True,1,,56,2026-03-30,Future
+GPH Builders Ellon),NMBSL101,Scotland,AB51 5QW,Silver,1070.8,False,True,1,,56,2026-03-30,Future
+Highland Industrial Supplies (Group Account),HIGHL101,Scotland,AB53 4AG,Platinum,84708.55,False,True,1,,30,2026-03-04,Future
+I&K Supplies,NMBSL101,Scotland,AB43 9DP,Bronze,897.5,False,False,1,,84,2026-04-27,Future
+James Mutch Limited,JAMES105,Scotland,AB25 5SN,Bronze,374.6,False,False,1,,84,2026-04-27,Future
+Lah Supplies Limited,LAHSU101,Scotland,AB51 5DR,Iron,0.0,True,False,1,,30,2026-03-04,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,AB12 3LE,Bronze,569.2,True,True,1,,30,2026-03-04,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,AB51 5GT,Bronze,569.2,True,True,1,,30,2026-03-04,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,AB53 5PJ,Bronze,569.2,True,True,1,,30,2026-03-04,Future
+Nortruck Services Limited,NORTR101,Scotland,AB12 3JZ,Silver,1082.4,False,False,1,,56,2026-03-30,Future
+Red Wings UK Ltd (Used to beK & L Ross Ltd),REDWI101,Scotland,AB12 3LW,Silver,1298.5,False,False,1,,56,2026-03-30,Future
+Ross Safety and Survival Limited,ROSSS101,Scotland,AB12 3GW,Silver,8197.0,False,False,1,,56,2026-03-30,Future
+RS Machinery Group LTD,RSMAC101,Scotland,AB23 8JS,Silver,4563.8,False,True,1,,56,2026-03-30,Future
+Scots Bearings (Group Account),SCOTS101,Scotland,AB21 0GG,Silver,8645.8,False,False,1,,56,2026-03-30,Future
+Tool Den (Duo Tool),DUOTO101,Scotland,AB41 8NW,Platinum,74797.0,False,False,1,,30,2026-03-04,Future
+Waverley Cutting Tools,WAVER102,Scotland,AB12 4XX,Silver,3442.7,False,True,1,,56,2026-03-30,Future
+WB Alloy Welding (Group Account),WBALL101,Scotland,AB12 3LY,Silver,7633.5,False,True,1,,56,2026-03-30,Future
+WB Alloy Welding (Group Account),WBALL101,Scotland,AB12 3QL,Silver,7633.5,False,False,1,,56,2026-03-30,Future
+Angus & Perthshire Bearing Ltd,ANGUS101,Scotland,PH1 3JE,Silver,2260.08,False,False,2,,56,2026-03-30,Future
+Highland Industrial Supplies (Group Account),HIGHL101,Scotland,DD3 7NU,Platinum,84708.55,False,True,2,,30,2026-03-04,Future
+Highland Industrial Supplies (Group Account),HIGHL101,Scotland,PH1 3XU,Platinum,84708.55,False,True,2,,30,2026-03-04,Future
+Highland Industrial Supplies (Group Account),HIGHL101,Scotland,PH33 6PR,Platinum,84708.55,False,True,2,,30,2026-03-04,Future
+R&M Bearings,NMBSL101,Scotland,DD2 3QH,Bronze,811.9,False,False,2,,84,2026-04-27,Future
+Scots Bearings (Group Account),SCOTS101,Scotland,DD2 3SP,Silver,8645.8,False,False,2,,56,2026-03-30,Future
+Scots Bearings (Group Account),SCOTS101,Scotland,DD2 4UT,Silver,8645.8,False,True,2,,56,2026-03-30,Future
+Universal Engineering Tools,UNIVE103,Scotland,DD1 4JG,Silver,1746.72,False,False,2,,56,2026-03-30,Future
+Diamond Industrial Supply Co,DIAMO101,Scotland,FK1 4QF,Bronze,126.4,True,False,3,,30,2026-03-04,Future
+Lion Safety,SAFET102,Scotland,FK3 9XB,Platinum,91390.0,False,False,3,,30,2026-03-04,Future
+Philip Industrial,NMBSL101,Scotland,FK3 8YD,Silver,2303.4,False,False,3,,56,2026-03-30,Future
+R Jackson Engineering Distributors,JACKS101,Scotland,FK5 3NS,Silver,1530.0,False,False,3,,56,2026-03-30,Future
+Scott Direct (Grangemouth),UNITE103,Scotland,FK3 8TR,Bronze,244.0,True,False,3,,30,2026-03-04,Future
+Unico Limited,UNICO101,Scotland,FK2 8HT,Gold,20686.78,True,False,3,,30,2026-03-04,Future
+Clarik Engineering,CLARI101,Scotland,KY11 2SF,Gold,26460.5,False,False,4,,30,2026-03-04,Future
+Cromwell Tools (Fife),CROMW101,Scotland,KY7 4PF,Bronze,634.0,False,False,4,,84,2026-04-27,Future
+Protool Engineering Supplies LTD,PROTO102,Scotland,KY11 9JN,Silver,2442.2,False,False,4,,56,2026-03-30,Future
+A.B.T Machine & Tooling,UNITE103,Scotland,G13 1EF,Silver,1645.5,False,False,5,,56,2026-03-30,Future
+Alex Mather,NMBSL101,Scotland,G84 7DG,Silver,2207.0,False,False,5,,56,2026-03-30,Future
+Aspire Industrial Services,ASPIR101,Scotland,G52 4LT,Silver,9623.98,False,False,5,,56,2026-03-30,Future
+Bills Tool Store Limited,BILLS101,Scotland,G40 2LD,Bronze,33.4,False,False,5,,84,2026-04-27,Future
+Caley Office (Print & Stat. Ltd),CALEY101,Scotland,G41 1NG,Silver,1834.8,True,True,5,,30,2026-03-04,Future
+Cleaning & Wiping Supplies LTD,CLEAN101,Scotland,G74 1PW,Gold,25334.86,True,False,5,,30,2026-03-04,Future
+Clow Group,CLOWG101,Scotland,G40 2QR,Silver,2670.5,False,False,5,,56,2026-03-30,Future
+Diverse Products Ltd,DIVER101,Scotland,G51 3BA,Silver,2312.7,False,False,5,,56,2026-03-30,Future
+DL Industrial Supplies Limited,DLIND101,Scotland,G74 5LW,Gold,16755.08,False,False,5,,30,2026-03-04,Future
+Engineering Supply Co Ltd,ENGIN103,Scotland,G46 8TU,Silver,1487.2,False,False,5,,56,2026-03-30,Future
+Fastenal Europe Limited (Glasgow),FASTE103,Scotland,G69 6GA,Silver,3105.0,False,False,5,,56,2026-03-30,Future
+JRS Industrial Supplies Ltd,JRSIN101,Scotland,G75 0RH,Bronze,198.3,False,False,5,,84,2026-04-27,Future
+Kilrevin Holdings Ltd t/a Paksol,KILRE101,Scotland,G3 8EX,Silver,4534.54,False,False,5,,56,2026-03-30,Future
+LSK Supplies,LSKSU101,Scotland,G22 6JJ,Bronze,556.1,True,True,5,,30,2026-03-04,Future
+PF Cuscack,PFCUS001,Scotland,G32 8RH,Iron,0.0,False,False,5,,84,2026-04-27,Future
+Premier Welding Limited,PREMI102,Scotland,G52 4NQ,Gold,18230.24,False,False,5,,30,2026-03-04,Future
+Scots Bearings (Group Account),SCOTS101,Scotland,G68 9HN,Silver,8645.8,False,False,5,,56,2026-03-30,Future
+Suresafe Protection Ltd,SURES101,Scotland,G67 2BA,Silver,1399.8,True,False,5,,30,2026-03-04,Future
+Waveley Cutting Tools,UNIVE103,Scotland,G52 4XX,Silver,3442.7,False,True,5,,56,2026-03-30,Future
+WB Alloy Welding (Group Account),WBALL101,Scotland,G52 4LA,Silver,7633.5,False,False,5,,56,2026-03-30,Future
+BHC Ltd,NMBSL101,Scotland,ML11 8HS,Silver,2203.2,False,False,6,,56,2026-03-30,Future
+Cromwell Tools (Bellshill),CROMW101,Scotland,ML4 3LU,Platinum,50093.9,False,False,6,,30,2026-03-04,Future
+Gray Workshop Supplies,GRAYW101,Scotland,ML5 2JG,Silver,2965.8,False,False,6,,56,2026-03-30,Future
+Mannering Industrial Limited,MANNE102,Scotland,ML4 3LR,Silver,2919.5,False,False,6,,56,2026-03-30,Future
+Scotcast Building Supplies,NMBSL101,Scotland,ML5 4RY,Silver,1080.0,False,False,6,,56,2026-03-30,Future
+Scotech Welding Supplies Limited,SCOTE101,Scotland,ML4 3NW,Silver,2524.6,False,False,6,,56,2026-03-30,Future
+Toolstop limited t/a Toolsaver,TOOLS101,Scotland,ML4 3NP,Gold,18559.5,False,False,6,,30,2026-03-04,Future
+Workwear & PPE Supplies,WORKW104,Scotland,ML6 7UD,Iron,0.0,False,False,6,,84,2026-04-27,Future
+Bearing Boys,BEARI101,Scotland,KA8 9DJ,Bronze,619.9,False,False,7,,84,2026-04-27,Future
+Caldwell Wright Company (Group Account),NMBSL101,Scotland,KA8 8BQ,Iron,0.0,False,False,7,,84,2026-04-27,Future
+Engineering Tools & Consumables (ETC),ENGIN104,Scotland,KA1 3DL,Silver,3463.1,False,False,7,,56,2026-03-30,Future
+Gaws Goods LTD,GAWSG101,Scotland,KA12 0QN,Bronze,609.0,False,False,7,,84,2026-04-27,Future
+Mathieson Limited,MATHI101,Scotland,KA4 8LE,Bronze,612.0,False,False,7,,84,2026-04-27,Future
+Prestwick Aircrat Tooling Ltd,PREST101,Scotland,KA9 2PT,Silver,3459.4,False,False,7,,56,2026-03-30,Future
+Scots Bearings (Group Account),SCOTS101,Scotland,KA11 4HR,Silver,8645.8,False,False,7,,56,2026-03-30,Future
+Tower tools and Equipment Ltd,TOWER102,Scotland,KA2 9AF,Silver,4232.0,False,False,7,,56,2026-03-30,Future
+TPS Weldtech Limited,WELDT001,Scotland,KA1 5LE,Silver,3302.0,False,False,7,,56,2026-03-30,Future
+JW Grant,NMBSL101,Scotland,PA3 2EH,Iron,0.0,False,False,8,,84,2026-04-27,Future
+B & N Robertson ltd/ Billys power tools,TROYU101,Scotland,DG1 3JZ,Iron,0.0,False,False,9,,84,2026-04-27,Future
+McDermid Supply Company,NMBSL101,Scotland,DG1 1PG,Silver,4784.2,False,False,9,,56,2026-03-30,Future
+Akro Plant,NMBSL101,Scotland,EH54 5EG,Silver,4107.8,False,False,10,,56,2026-03-30,Future
+Caley Office (Print & Stat. Ltd),CALEY101,Scotland,EH6 7BN,Silver,1834.8,True,True,10,,30,2026-03-04,Future
+Dobies Heat Centre,NMBSL101,Scotland,EH53 OLF,Silver,1698.8,False,False,10,,56,2026-03-30,Future
+Maxam,MAXAM101,Scotland,EH11 4DZ,Silver,1904.34,False,False,10,,56,2026-03-30,Future
+Agriparts Borders,NMBSL101,Scotland,TD5 8DL,Silver,1852.9,False,False,11,,56,2026-03-30,Future
+J.K.T Engineering & Fabrication Ltd,JKTEN101,Scotland,TD15 1NX,Silver,1066.0,False,False,11,,56,2026-03-30,Future
+Thorburn Group,THORB101,Scotland,TD15 1TQ,Silver,4407.0,False,False,11,,56,2026-03-30,Future
+Avco Industrial  Supplies Ltd,AVCOI101,Scotland,IV6 7UA,Silver,3788.4,False,False,12,,56,2026-03-30,Future
+Highland Industrial Supplies (Group Account),HIGHL101,Scotland,IV1 1SG,Platinum,84708.55,False,True,12,,30,2026-03-04,Future
+Highland Industrial Supplies (Group Account),HIGHL101,Scotland,IV30 6AG,Platinum,84708.55,False,True,12,,30,2026-03-04,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,IV1 1SN,Bronze,569.2,True,True,12,,30,2026-03-04,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,IV30 6AF,Bronze,569.2,True,True,12,,30,2026-03-04,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,IV51 9HD,Bronze,569.2,True,True,12,,30,2026-03-04,Future
+Scots Bearings (Group Account),SCOTS101,Scotland,IV1 1SY,Silver,8645.8,False,False,12,,56,2026-03-30,Future
+SER Supplies Limited,SERSU101,Scotland,IV18 0SB,Gold,15160.2,False,False,12,,30,2026-03-04,Future
+Auto Moto Factory LTD,AUTOM102,Northern Ireland,BT92 9BL,Silver,1270.17,False,False,13,,56,2026-03-30,Future
+Auto Supplies,AUTOS101,Northern Ireland,BT34 2DE,Silver,1341.7,False,False,13,,56,2026-03-30,Future
+Autobits Motor Store Limited,AUTOB101,Northern Ireland,BT61 7NG,Silver,2260.2,False,False,13,,56,2026-03-30,Future
+Automotive Supplies,AUTOM101,Northern Ireland,BT47 9PW,Iron,0.0,False,False,13,,84,2026-04-27,Future
+Belfast Ship Stores,BELFA101,Northern Ireland,BT3 9BJ,Silver,1008.0,False,False,13,,56,2026-03-30,Future
+BMG Hardware,NMBSL101,Northern Ireland,BT93 3DE,Bronze,846.5,False,False,13,,84,2026-04-27,Future
+Campbell Engineering Supplies,CAMPB102,Northern Ireland,BT17 9HS,Bronze,517.9,False,False,13,,84,2026-04-27,Future
+Carnroe Supplies Limited,CARNR101,Northern Ireland,BT51 5UZ,Silver,3231.9,False,False,13,,56,2026-03-30,Future
+Clenz Ireland Ltd,PROFORMA,Northern Ireland,BT44 0SN,Iron,0.0,False,False,13,,84,2026-04-27,Future
+Dekah NI Limited,DEKAH102,Northern Ireland,BT3 9LE,Iron,0.0,False,False,13,,84,2026-04-27,Future
+E A Martin,EAMAR101,Northern Ireland,BT51 5XR,Silver,3825.0,False,False,13,,56,2026-03-30,Future
+E McIntyre (Group Account),MCINT101,Northern Ireland,BT51 5TB,Bronze,219.4,False,False,13,,84,2026-04-27,Future
+Enquip Supplies,ENQUI101,Northern Ireland,BT47 3XX,Silver,1548.1,False,False,13,,56,2026-03-30,Future
+Fane Valley Stores Ltd,FANEV101,Northern Ireland,BT67 0LT,Gold,12835.6,False,True,13,,30,2026-03-04,Future
+Fastenal Europe Limited (Ballymena),FASTE103,Northern Ireland,BT42 4QJ,Gold,42092.9,False,False,13,,30,2026-03-04,Future
+Fastenal Europe Limited (Dungannon),FASTE103,Northern Ireland,BT71 7EF,Silver,1756.4,False,False,13,,56,2026-03-30,Future
+Fyfes Vehicle & Engineering Supplies Ltd,FYFES101,Northern Ireland,BT42 3HB,Silver,1555.6,False,True,13,,56,2026-03-30,Future
+Henry R Ayton,HENRY101,Northern Ireland,BT17 9HS,Silver,2925.3,False,False,13,,56,2026-03-30,Future
+Hillcrest Wholesale Ltd,HILLC101,Northern Ireland,BT45 8HT,Silver,1502.1,False,False,13,,56,2026-03-30,Future
+Hydepark Ireland Ltd,HYDEP101,Northern Ireland,BT41 4NT,Gold,35807.5,False,False,13,,30,2026-03-04,Future
+Island Bawn,NMBSL101,Northern Ireland,BT41 2BA,Iron,0.0,False,False,13,,84,2026-04-27,Future
+J Mcaleer & Sons LTD,JMCAL101,Northern Ireland,BT79 0QW,Iron,0.0,False,False,13,,84,2026-04-27,Future
+Kennedy & Morrison,NMBSL101,Northern Ireland,BT12 6QF,Silver,1413.6,False,False,13,,56,2026-03-30,Future
+Lindsay Protective Clothing,LINDS101,Northern Ireland,BT52 2NL,Silver,4212.0,False,False,13,,56,2026-03-30,Future
+MOL Tools & Abbrasives LTD,MOLTO101,Northern Ireland,BT46 5TE,Silver,7042.0,False,False,13,,56,2026-03-30,Future
+Mourne Mist Bottled Water Company T/A MHS Hygiene & Workwear,MOURN101,Northern Ireland,BT34 3FN,Silver,1439.8,False,False,13,,56,2026-03-30,Future
+Norseman Safety,NORSE101,Northern Ireland,BT3 9DJ,Silver,2326.7,True,False,13,,30,2026-03-04,Future
+North Down Motor Factors Limited,NORTH105,Northern Ireland,BT3 9DJ,Silver,7541.7,False,False,13,,56,2026-03-30,Future
+O'Neill Supplies Limited,ONEIL103,Northern Ireland,BT43 7LX,Bronze,703.2,False,False,13,,84,2026-04-27,Future
+PJD Safety,PJDSA101,Northern Ireland,BT70 2NQ,Platinum,75403.55,True,False,13,,30,2026-03-04,Future
+Prosafe products Limited,PROSA101,Northern Ireland,BT36 4PT,Silver,4180.8,True,False,13,,30,2026-03-04,Future
+Safety Solutions NI Ltd,SAFET104,Northern Ireland,BT28 2RB,Gold,18957.6,False,False,13,,30,2026-03-04,Future
+Search Workshop Supplies LTD,SEARC101,Northern Ireland,BT47 2ED,Silver,9889.2,False,False,13,,56,2026-03-30,Future
+The Tool Shed,NMBSL101,Northern Ireland,BT71 4HR,Silver,2203.2,False,False,13,,56,2026-03-30,Future
+The Tool Shed,PROFORMA,Northern Ireland,BT71 4HR,Silver,1333.2,False,False,13,,56,2026-03-30,Future
+Total Consumables NI,TOTAL106,Northern Ireland,BT2 8LA,Silver,2965.8,False,False,13,,56,2026-03-30,Future
+Tradesman NI,TRADE102,Northern Ireland,BT82 8EE,Iron,0.0,False,False,13,,84,2026-04-27,Future
+WB Alloy Welding (Group Account),WBALL101,Northern Ireland,BT70 2NS,Silver,7633.5,False,False,13,,56,2026-03-30,Future
+M W Murphy & Son Ltd,MWMUR101,Southern Ireland,X91 D821,Silver,3930.0,False,False,14,,56,2026-03-30,Future
+V.S Supplier,VSSUP101,Southern Ireland,X91 RD28,Iron,0.0,False,False,14,,84,2026-04-27,Future
+V.S Tools,VSTOO101,Southern Ireland,X91 RD28,Silver,3334.78,False,False,14,,56,2026-03-30,Future
+Arc Tech Welding,ARCTE101,Southern Ireland,D15 XW7K,Silver,2803.6,False,False,15,,56,2026-03-30,Future
+Carvills Tool & Welding Limited (Southern),CARVI102,Southern Ireland,A75 DX95,Silver,2651.6,False,False,15,,56,2026-03-30,Future
+Cladai Dhun Na Ngall Teoranta Ltd,CLADA101,Southern Ireland,F92 DN88,Iron,0.0,False,False,15,,84,2026-04-27,Future
+D C Welding,DCWEL101,Southern Ireland,W91 YP5V,Iron,0.0,False,False,15,,84,2026-04-27,Future
+Dargan Tools Ltd,DARGA101,Southern Ireland,R93 TY20,Silver,4497.4,False,False,15,,56,2026-03-30,Future
+Dekah Supplies Irealnd Ltd,DEKAH101,Southern Ireland,R35 F7T3,Iron,0.0,False,False,15,,84,2026-04-27,Future
+Deltawaite Limited,DELTA101,England,LA13 0EP,Bronze,890.0,True,False,15,2025-11-20,30,2025-12-20,Overdue
+DO Sullivan Consulting Engineering Ltd,DOSUL101,Southern Ireland,Y25 RK73,Iron,0.0,False,False,15,,84,2026-04-27,Future
+Dormervale Ltd t/a M & E Supplies,DORME101,Southern Ireland,K78 K6N7,Silver,5479.2,True,False,15,,30,2026-03-04,Future
+Dublin North Proweld,DUBLI101,Southern Ireland,D11 PX98,Gold,20031.3,False,False,15,,30,2026-03-04,Future
+E.P.T Ireland Ltd,EPTIR101,Southern Ireland,R93 AH94,Gold,20619.0,True,False,15,,30,2026-03-04,Future
+Everyday Welding Supplies Limited,EVERY101,Southern Ireland,V94 R866,Gold,13913.7,False,False,15,,30,2026-03-04,Future
+Fastenal Europe Limited (Dublin),FASTE104,Southern Ireland,D10 FA06,Silver,1447.48,False,False,15,,56,2026-03-30,Future
+Fiinka Limited,FIINK101,Scotland,KA10 6QR,Silver,10647.6,False,False,15,,56,2026-03-30,Future
+Highland Industrial Supplies (Group Account),HIGHL101,Scotland,KW15 1RE,Platinum,84708.55,False,True,15,,30,2026-03-04,Future
+Inventory Supply & Management,INVEN101,Southern Ireland,D12 HX73,Silver,1256.7,False,False,15,,56,2026-03-30,Future
+JBS Group,JBSGR101,Southern Ireland,H18 X727,Silver,1740.44,True,True,15,,30,2026-03-04,Future
+Johnston & Bulman,NMBSL101,England,CA1 1TD,Bronze,993.7,False,False,15,,84,2026-04-27,Future
+KWS Kilkenny Welding Supplies Ltd,KILKE101,Southern Ireland,R95 KX72,Iron,0.0,False,False,15,,84,2026-04-27,Future
+Lewis Island Crofters Ltd,LEWIS101,Scotland,HS1 2RD,Silver,2828.2,False,False,15,,56,2026-03-30,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,HS1 2RA,Bronze,569.2,True,True,15,,30,2026-03-04,Future
+MacGregor Industrial Supplies Limited,MACGR101,Scotland,KW15 1FL,Bronze,569.2,True,True,15,,30,2026-03-04,Future
+Mark John Limited,MARKJ101,Southern Ireland,D22 V668,Silver,4227.0,False,False,15,,56,2026-03-30,Future
+Maurice Doody Sales,MAURI101,Southern Ireland,V94 E704,Gold,21194.2,False,False,15,,30,2026-03-04,Future
+Thomas Graham & Sons (Group Account),THOMA101,England,CA6 4SQ,Silver,7860.52,True,True,15,2025-11-19,30,2025-12-19,Overdue
+Tool Force UK,NMBSL101,Southern Ireland,F93 AX07,Silver,4770.9,False,False,15,,56,2026-03-30,Future
+Total Consumables,TOTAL105,Southern Ireland,W34 TX29,Silver,10245.32,False,False,15,,56,2026-03-30,Future
