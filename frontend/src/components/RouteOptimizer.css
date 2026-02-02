@@ -313,6 +313,18 @@
   background-color: #2f855a;
 }
 
+.route-map-container {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.route-map-container h4 {
+  margin: 0 0 1rem 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+}
+
 @media (max-width: 1024px) {
   .optimizer-content {
     grid-template-columns: 1fr;
