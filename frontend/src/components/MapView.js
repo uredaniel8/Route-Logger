@@ -113,6 +113,12 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
     return 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
   };
 
+  // Memoize selected customers as a Set for O(1) lookup performance
+  const selectedCustomersSet = React.useMemo(
+    () => new Set(selectedCustomers),
+    [selectedCustomers]
+  );
+
   const isOverdue = (nextDueDate) => {
     if (!nextDueDate) return false;
     return new Date(nextDueDate) < new Date();
@@ -168,7 +174,7 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
             key={`map-${customers.length}`}
           >
             {customerLocations
-              .filter(location => !showOnlySelected || selectedCustomers.includes(location.index))
+              .filter(location => !showOnlySelected || selectedCustomersSet.has(location.index))
               .map((location) => (
                 <Marker
                   key={location.index}

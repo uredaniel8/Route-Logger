@@ -397,7 +397,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
                 <div className="route-map-container">
                   <h4>Route Visualization</h4>
                   {geocoding && (
-                    <div className="loading-message">
+                    <div className="loading-message" role="status" aria-live="polite">
                       <p>Loading map... Geocoding {optimizedRoute.optimized_customers.length} locations.</p>
                     </div>
                   )}
