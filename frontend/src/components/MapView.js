@@ -4,6 +4,11 @@ import './MapView.css';
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
 
+// Log Google Maps configuration for debugging
+console.log('=== MapView Configuration ===');
+console.log('Google Maps API Key:', GOOGLE_MAPS_API_KEY ? '✓ Set' : '✗ Not set');
+console.log('============================');
+
 const mapContainerStyle = {
   width: '100%',
   height: '600px',
@@ -15,11 +20,12 @@ const defaultCenter = {
 };
 
 function MapView({ customers, selectedCustomers, onSelectionChange }) {
-  const [map, setMap] = useState(null);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [customerLocations, setCustomerLocations] = useState([]);
+  const [mapsLoadError, setMapsLoadError] = useState(false);
 
   useEffect(() => {
+    console.log('MapView: Processing', customers.length, 'customers');
     // In a real app, you would geocode postcodes here
     // For now, we'll use mock coordinates around London
     const mockLocations = customers.map((customer, index) => ({
@@ -29,15 +35,13 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
       index,
     }));
     setCustomerLocations(mockLocations);
+    console.log('MapView: Mock locations generated for', mockLocations.length, 'customers');
   }, [customers]);
 
-  const onLoad = useCallback((map) => {
-    setMap(map);
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    setMap(null);
-  }, []);
+  // Note: GoogleMap component requires onLoad and onUnmount callbacks even if not used
+  // These satisfy the component's API requirements
+  const onLoad = useCallback(() => {}, []);
+  const onUnmount = useCallback(() => {}, []);
 
   const handleMarkerClick = (location) => {
     setSelectedMarker(location);
@@ -68,6 +72,11 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
       <div className="map-controls">
         <h2>Customer Map View</h2>
         <p>Click markers to view customer details. Selected customers appear in green.</p>
+        {customers.length === 0 && (
+          <div className="info-message">
+            <p><strong>No customers to display.</strong> Import customers from the Customers tab first.</p>
+          </div>
+        )}
         <div className="legend">
           <div className="legend-item">
             <span className="legend-color red"></span>
@@ -80,8 +89,14 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
         </div>
       </div>
 
-      {GOOGLE_MAPS_API_KEY ? (
-        <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+      {GOOGLE_MAPS_API_KEY && !mapsLoadError ? (
+        <LoadScript 
+          googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+          onError={() => {
+            console.error('Failed to load Google Maps API');
+            setMapsLoadError(true);
+          }}
+        >
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={defaultCenter}
@@ -127,19 +142,29 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
       ) : (
         <div className="map-placeholder">
           <div className="map-placeholder-content">
-            <h3>Google Maps API Key Required</h3>
+            <h3>⚠️ Google Maps API Key Required</h3>
             <p>To view the interactive map, please add your Google Maps API key to the environment variables.</p>
             <p>Set <code>REACT_APP_GOOGLE_MAPS_API_KEY</code> in your <code>.env</code> file.</p>
-            <div className="mock-map">
-              <h4>Mock Customer Locations</h4>
-              <ul>
-                {customers.slice(0, 5).map((customer, index) => (
-                  <li key={index}>
-                    {customer.company} - {customer.postcode}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <p><strong>Steps to configure:</strong></p>
+            <ol style={{ textAlign: 'left', maxWidth: '500px', margin: '0 auto' }}>
+              <li>Copy <code>frontend/.env.example</code> to <code>frontend/.env</code></li>
+              <li>Add your Google Maps API key</li>
+              <li>Restart the development server</li>
+            </ol>
+            {customers.length > 0 && (
+              <div className="mock-map">
+                <h4>Customer List (showing first 10)</h4>
+                <ul style={{ textAlign: 'left', maxWidth: '500px', margin: '1rem auto' }}>
+                  {customers.slice(0, 10).map((customer, index) => (
+                    <li key={index}>
+                      {customer.company} - {customer.postcode}
+                      {isOverdue(customer.next_due_date) && ' ⚠️ Overdue'}
+                    </li>
+                  ))}
+                  {customers.length > 10 && <li><em>...and {customers.length - 10} more</em></li>}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       )}
