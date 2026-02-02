@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
 import './RouteOptimizer.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+
+// Cache for geocoded coordinates to avoid redundant API calls
+const geocodeCache = new Map();
 
 const routeMapContainerStyle = {
   width: '100%',
@@ -23,6 +26,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 56.4907, lng: -4.2026 });
+  const [geocoding, setGeocoding] = useState(false);
 
   const handleOptimizeRoute = async () => {
     // Validate postcodes format before sending request (basic validation)
@@ -123,7 +127,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
     });
   };
 
-  // Geocode optimized route customers for map visualization
+  // Geocode optimized route customers for map visualization with caching
   useEffect(() => {
     if (!optimizedRoute || !optimizedRoute.optimized_customers || !GOOGLE_MAPS_API_KEY) {
       setRouteCoordinates([]);
@@ -131,8 +135,22 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
     }
 
     const geocodeRoute = async () => {
-      // Use Promise.all to parallelize geocoding requests
+      setGeocoding(true);
+      
+      // Use Promise.all to parallelize geocoding requests, but check cache first
       const geocodePromises = optimizedRoute.optimized_customers.map(async (customer) => {
+        const cacheKey = `${customer.postcode}|${customer.country || 'UK'}`;
+        
+        // Check cache first
+        if (geocodeCache.has(cacheKey)) {
+          const cached = geocodeCache.get(cacheKey);
+          return {
+            ...customer,
+            lat: cached.lat,
+            lng: cached.lng,
+          };
+        }
+        
         try {
           const address = `${customer.postcode}, ${customer.country || 'UK'}`;
           const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`;
@@ -142,6 +160,10 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
           
           if (data.status === 'OK' && data.results.length > 0) {
             const location = data.results[0].geometry.location;
+            
+            // Cache the result
+            geocodeCache.set(cacheKey, { lat: location.lat, lng: location.lng });
+            
             return {
               ...customer,
               lat: location.lat,
@@ -168,6 +190,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
       const coords = results.filter(coord => coord !== null);
       
       setRouteCoordinates(coords);
+      setGeocoding(false);
       
       // Set map center to first coordinate
       if (coords.length > 0) {
@@ -370,54 +393,65 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
               </button>
 
               {/* Route Visualization Map */}
-              {GOOGLE_MAPS_API_KEY && routeCoordinates.length > 0 && (
+              {GOOGLE_MAPS_API_KEY && (
                 <div className="route-map-container">
                   <h4>Route Visualization</h4>
-                  <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
-                    <GoogleMap
-                      mapContainerStyle={routeMapContainerStyle}
-                      center={mapCenter}
-                      zoom={10}
-                    >
-                      {/* Draw polyline connecting all stops */}
-                      <Polyline
-                        path={routeCoordinates.map(c => ({ lat: c.lat, lng: c.lng }))}
-                        options={{
-                          strokeColor: '#2196F3',
-                          strokeOpacity: 0.8,
-                          strokeWeight: 4,
-                        }}
-                      />
-                      
-                      {/* Add markers for each stop */}
-                      {routeCoordinates.map((coord, index) => (
-                        <Marker
-                          key={index}
-                          position={{ lat: coord.lat, lng: coord.lng }}
-                          label={{
-                            text: `${index + 1}`,
-                            color: 'white',
-                            fontWeight: 'bold',
+                  {geocoding && (
+                    <div className="loading-message">
+                      <p>Loading map... Geocoding {optimizedRoute.optimized_customers.length} locations.</p>
+                    </div>
+                  )}
+                  {routeCoordinates.length > 0 ? (
+                    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+                      <GoogleMap
+                        mapContainerStyle={routeMapContainerStyle}
+                        center={mapCenter}
+                        zoom={10}
+                      >
+                        {/* Draw polyline connecting all stops */}
+                        <Polyline
+                          path={routeCoordinates.map(c => ({ lat: c.lat, lng: c.lng }))}
+                          options={{
+                            strokeColor: '#2196F3',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 4,
                           }}
-                          onClick={() => setSelectedMarker(coord)}
                         />
-                      ))}
+                        
+                        {/* Add markers for each stop */}
+                        {routeCoordinates.map((coord, index) => (
+                          <Marker
+                            key={index}
+                            position={{ lat: coord.lat, lng: coord.lng }}
+                            label={{
+                              text: `${index + 1}`,
+                              color: 'white',
+                              fontWeight: 'bold',
+                            }}
+                            onClick={() => setSelectedMarker(coord)}
+                          />
+                        ))}
 
-                      {/* InfoWindow for selected marker */}
-                      {selectedMarker && (
-                        <InfoWindow
-                          position={{ lat: selectedMarker.lat, lng: selectedMarker.lng }}
-                          onCloseClick={() => setSelectedMarker(null)}
-                        >
-                          <div>
-                            <h4>{selectedMarker.company}</h4>
-                            <p><strong>Postcode:</strong> {selectedMarker.postcode}</p>
-                            <p><strong>Account:</strong> {selectedMarker.account_number}</p>
-                          </div>
-                        </InfoWindow>
-                      )}
-                    </GoogleMap>
-                  </LoadScript>
+                        {/* InfoWindow for selected marker */}
+                        {selectedMarker && (
+                          <InfoWindow
+                            position={{ lat: selectedMarker.lat, lng: selectedMarker.lng }}
+                            onCloseClick={() => setSelectedMarker(null)}
+                          >
+                            <div>
+                              <h4>{selectedMarker.company}</h4>
+                              <p><strong>Postcode:</strong> {selectedMarker.postcode}</p>
+                              <p><strong>Account:</strong> {selectedMarker.account_number}</p>
+                            </div>
+                          </InfoWindow>
+                        )}
+                      </GoogleMap>
+                    </LoadScript>
+                  ) : !geocoding && (
+                    <div className="map-placeholder">
+                      <p>Unable to display route map. Some locations could not be geocoded.</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

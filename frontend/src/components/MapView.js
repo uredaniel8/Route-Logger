@@ -25,6 +25,7 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [customerLocations, setCustomerLocations] = useState([]);
   const [mapsLoadError, setMapsLoadError] = useState(false);
+  const [showOnlySelected, setShowOnlySelected] = useState(false);
 
   useEffect(() => {
     console.log('MapView: Processing', customers.length, 'customers');
@@ -137,6 +138,17 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
             <span>Selected</span>
           </div>
         </div>
+        <div className="toggle-controls">
+          <label className="toggle-label">
+            <input
+              type="checkbox"
+              checked={showOnlySelected}
+              onChange={(e) => setShowOnlySelected(e.target.checked)}
+              className="toggle-checkbox"
+            />
+            <span>Show Only Selected Customers</span>
+          </label>
+        </div>
       </div>
 
       {GOOGLE_MAPS_API_KEY && !mapsLoadError ? (
@@ -155,14 +167,17 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
             onUnmount={onUnmount}
             key={`map-${customers.length}`}
           >
-            {customerLocations.map((location) => (
-              <Marker
-                key={location.index}
-                position={{ lat: location.lat, lng: location.lng }}
-                onClick={() => handleMarkerClick(location)}
-                icon={getMarkerColor(location)}
-              />
-            ))}
+            {customerLocations
+              .filter(location => !showOnlySelected || selectedCustomers.includes(location.index))
+              .map((location) => (
+                <Marker
+                  key={location.index}
+                  position={{ lat: location.lat, lng: location.lng }}
+                  onClick={() => handleMarkerClick(location)}
+                  icon={getMarkerColor(location)}
+                />
+              ))
+            }
 
             {selectedMarker && (
               <InfoWindow
