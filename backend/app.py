@@ -655,10 +655,11 @@ def optimize_route():
     optimized_order, legs = optimize_route_with_google_maps(waypoints, GOOGLE_MAPS_API_KEY)
     
     # Log successful route optimization
+    success_rate = (geocoding_stats['successful'] / geocoding_stats['total_attempted'] * 100) if geocoding_stats['total_attempted'] > 0 else 0
     app.logger.info(
         f"Route optimization successful - {len(waypoints)} waypoints, "
         f"{len(customers)} customers, "
-        f"Geocoding success rate: {(geocoding_stats['successful'] / geocoding_stats['total_attempted'] * 100):.0f}%"
+        f"Geocoding success rate: {success_rate:.0f}%"
     )
 
     # Reconstruct optimized customer list based on the order

@@ -387,7 +387,7 @@ class TestRouteOptimizeGeocoding:
     
     @patch('app.geocode_postcode')
     @patch('app.load_customers')
-    def test_error_response_includes_formatted_output(self, mock_load, mock_geocode, client, mock_customers):
+    def test_error_response_includes_formatted_customer_list(self, mock_load, mock_geocode, client, mock_customers):
         """Test that error response includes formatted failure information"""
         mock_load.return_value = mock_customers
         

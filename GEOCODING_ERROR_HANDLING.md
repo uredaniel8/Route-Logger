@@ -153,7 +153,7 @@ The system provides detailed logging at multiple levels:
 
 1. **Validate on Import**: Check postcode formats when importing customer data
 2. **Regular Updates**: Periodically verify customer postcodes are current
-3. **Use Full Format**: Include spaces in UK postcodes (e.g., "SW1A 1AA" not "SW1A1AA")
+3. **Flexible Format**: Both "SW1A 1AA" (with space) and "SW1A1AA" (without space) are accepted, though spaces are preferred for readability
 4. **Specify Country**: Always provide the country field for better geocoding accuracy
 
 ### Route Planning
