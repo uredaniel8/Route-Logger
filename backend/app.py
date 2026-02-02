@@ -39,7 +39,9 @@ EXPECTED_COLUMNS = [
 ]
 
 # Map your CSV headers -> expected keys
+# Supports both capitalized Excel/CSV headers AND lowercase headers
 CSV_COLUMN_MAP = {
+    # Capitalized headers (for Excel exports)
     "Company": "company",
     "Account Number": "account_number",
     "Country": "country",
@@ -54,6 +56,20 @@ CSV_COLUMN_MAP = {
     "Area Code": "area_code",
     "Multi Site?": "multi_site",
     "Urgency": "urgency",
+    # Lowercase headers (for direct CSV imports)
+    "company": "company",
+    "account_number": "account_number",
+    "country": "country",
+    "postcode": "postcode",
+    "status": "status",
+    "current_spend": "current_spend",
+    "tagged_customers": "tagged_customers",
+    "date_of_last_visit": "date_of_last_visit",
+    "visit_frequency": "visit_frequency",
+    "next_due_date": "next_due_date",
+    "area_code": "area_code",
+    "multi_site": "multi_site",
+    "urgency": "urgency",
 }
 
 
@@ -365,7 +381,7 @@ def import_customers():
             return jsonify({
                 "error": "CSV is missing required columns after mapping.",
                 "missing": missing,
-                "hint": "Your CSV headers should include: Company, Account Number, Country, Postcode, Status, Current Year Spend, Tagged Customer, Date of Last Visit, Visit Frequency (Days), Next Due Date"
+                "hint": "Your CSV headers should include either: (1) Capitalized: Company, Account Number, Country, Postcode, Status, Current Year Spend, Tagged Customer, Date of Last Visit, Visit Frequency (Days), Next Due Date OR (2) Lowercase: company, account_number, country, postcode, status, current_spend, tagged_customers, date_of_last_visit, visit_frequency, next_due_date"
             }), 400
 
         save_customers(df)

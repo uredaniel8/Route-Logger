@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './RouteOptimizer.css';
 
-const API_URL = process.env.REACT_APP_API_URL || '/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [optimizedRoute, setOptimizedRoute] = useState(null);
