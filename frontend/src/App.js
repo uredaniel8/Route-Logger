@@ -9,6 +9,14 @@ import './App.css';
 // You can override via frontend/.env
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Log environment configuration for debugging
+console.log('=== Route Logger Configuration ===');
+console.log('API URL:', API_URL);
+console.log('Environment:', process.env.NODE_ENV);
+console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL || '(using default)');
+console.log('REACT_APP_GOOGLE_MAPS_API_KEY:', process.env.REACT_APP_GOOGLE_MAPS_API_KEY ? '✓ Set' : '✗ Not set');
+console.log('==================================');
+
 async function readJsonSafe(response) {
   const contentType = response.headers.get('content-type') || '';
   const text = await response.text();
@@ -19,9 +27,17 @@ async function readJsonSafe(response) {
   }
 
   try {
-    return JSON.parse(text);
+    // TODO: Backend Issue - Fix NaN serialization in backend's _sanitize_df_for_json function
+    // The backend should use df.fillna(None) instead of df.where(pd.notnull(df), None)
+    // to properly convert NaN to null before JSON serialization.
+    // This is a workaround to handle invalid NaN values from pandas DataFrame serialization.
+    // Note: This regex only replaces NaN in JSON value positions (after colons), not in strings.
+    const sanitizedText = text.replace(/:\s*NaN/g, ': null');
+    return JSON.parse(sanitizedText);
   } catch (e) {
-    throw new Error(`Invalid JSON returned: ${text.slice(0, 120)}...`);
+    console.error('JSON parse error:', e.message);
+    console.error('First 200 chars of response:', text.slice(0, 200));
+    throw new Error(`Invalid JSON returned: ${e.message}`);
   }
 }
 
@@ -41,15 +57,22 @@ function App() {
     setLoading(true);
     setError(null);
 
+    console.log('Fetching customers from:', `${API_URL}/customers`);
+
     try {
       const response = await fetch(`${API_URL}/customers`);
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
         const txt = await response.text();
+        console.error('Failed to fetch customers:', response.status, txt);
         throw new Error(`HTTP ${response.status}: ${txt.slice(0, 200)}`);
       }
       const data = await readJsonSafe(response);
+      console.log('Customers loaded:', Array.isArray(data) ? data.length : 0, 'records');
       setCustomers(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error('Error fetching customers:', err);
       setError('Failed to load customers: ' + err.message);
     } finally {
       setLoading(false);
@@ -217,6 +240,14 @@ function App() {
               <button onClick={handleCreateGroups}>Group by Proximity</button>
               <button onClick={fetchCustomers}>Refresh</button>
             </div>
+
+            {customers.length === 0 && !loading && !error && (
+              <div className="empty-state">
+                <h3>No customers found</h3>
+                <p>Import customers using the buttons above to get started.</p>
+                <p>Make sure the backend API is running at: <code>{API_URL}</code></p>
+              </div>
+            )}
 
             <CustomerTable
               customers={customers}

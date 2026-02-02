@@ -106,7 +106,7 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
                     onChange={(e) => setEditData({ ...editData, tagged_customers: e.target.value })}
                   />
                 ) : (
-                  <span className={`tier-badge ${customer.tagged_customers?.toLowerCase()}`}>
+                  <span className={`tier-badge ${typeof customer.tagged_customers === 'string' ? customer.tagged_customers.toLowerCase() : ''}`}>
                     {customer.tagged_customers}
                   </span>
                 )}
