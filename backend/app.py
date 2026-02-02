@@ -106,7 +106,7 @@ def group_customers_by_proximity(customers_df, max_distance_km=10):
 def optimize_route_with_google_maps(waypoints, api_key):
     """Optimize route using Google Maps Directions API"""
     if not api_key or len(waypoints) < 2:
-        return waypoints, []
+        return [], []
     
     try:
         origin = waypoints[0]
@@ -133,7 +133,7 @@ def optimize_route_with_google_maps(waypoints, api_key):
     except Exception as e:
         print(f"Google Maps API error: {e}")
     
-    return list(range(len(waypoints))), []
+    return [], []
 
 
 @app.route('/api/customers', methods=['GET'])
@@ -258,9 +258,17 @@ def optimize_route():
     optimized_order, legs = optimize_route_with_google_maps(waypoints, GOOGLE_MAPS_API_KEY)
     
     # Reorder customers based on optimized route
-    if optimized_order:
-        optimized_customers = [customers[i] for i in [0] + [i+1 for i in optimized_order] + [len(customers)-1]]
+    # optimized_order contains the reordering of intermediate waypoints
+    # For customers [A, B, C, D], waypoints sent to API are [B, C] (middle customers)
+    # If API returns waypoint_order=[1, 0], it means visit C before B
+    if optimized_order and len(customers) > 2:
+        # Get middle customers (excluding first and last)
+        middle_customers = customers[1:-1]
+        # Reorder them according to the optimized order
+        reordered_middle = [middle_customers[i] for i in optimized_order]
+        optimized_customers = [customers[0]] + reordered_middle + [customers[-1]]
     else:
+        # For 2 customers or if optimization failed, use original order
         optimized_customers = customers
     
     return jsonify({
