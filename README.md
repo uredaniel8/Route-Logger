@@ -101,7 +101,9 @@ The frontend will run on `http://localhost:3000`
 2. **Edit Customer Data**: Click the "Edit" button on any customer row to modify:
    - Visit frequency (days between visits)
    - Tier group (Premium, Standard, etc.)
-3. **Import Customers**: Click "Import CSV" to upload a customer data file
+3. **Import Customers**: 
+   - Click "Import CSV" to upload a customer data file
+   - Click "Import Raw JSON" to paste JSON array directly
 4. **Export Customers**: Click "Export CSV" to download current customer data
 
 ### Customer Grouping
@@ -140,6 +142,7 @@ The frontend will run on `http://localhost:3000`
 - `POST /api/customers` - Add a new customer
 - `PUT /api/customers/<id>` - Update a customer
 - `POST /api/customers/import` - Import customers from CSV
+- `POST /api/customers/import/raw` - Import customers from raw JSON
 - `GET /api/customers/export` - Export customers to CSV
 
 ### Route Operations
