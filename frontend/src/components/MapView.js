@@ -13,12 +13,12 @@ console.log('============================');
 
 const mapContainerStyle = {
   width: '100%',
-  height: '600px',
+  height: '800px',
 };
 
 const defaultCenter = {
-  lat: 51.5074,
-  lng: -0.1278,
+  lat: 56.4907,
+  lng: -4.2026,
 };
 
 function MapView({ customers, selectedCustomers, onSelectionChange }) {
@@ -79,8 +79,8 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
       // Fallback to mock locations if no API key
       const mockLocations = customers.map((customer, index) => ({
         ...customer,
-        lat: 51.5074 + (Math.random() - 0.5) * 0.2,
-        lng: -0.1278 + (Math.random() - 0.5) * 0.2,
+        lat: 56.4907 + (Math.random() - 0.5) * 2.0,
+        lng: -4.2026 + (Math.random() - 0.5) * 2.0,
         index,
       }));
       setCustomerLocations(mockLocations);
@@ -150,9 +150,10 @@ function MapView({ customers, selectedCustomers, onSelectionChange }) {
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={defaultCenter}
-            zoom={11}
+            zoom={6}
             onLoad={onLoad}
             onUnmount={onUnmount}
+            key={`map-${customers.length}`}
           >
             {customerLocations.map((location) => (
               <Marker
