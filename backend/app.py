@@ -6,6 +6,7 @@ Handles customer management, route optimization, and Google Maps API integration
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import pandas as pd
+import numpy as np
 import os
 from datetime import datetime, timedelta
 from geopy.geocoders import Nominatim
@@ -17,99 +18,169 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
-DATA_FILE = os.path.join(os.path.dirname(__file__), 'data', 'customers.csv')
-GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
+DATA_FILE = os.path.join(os.path.dirname(__file__), "data", "customers.csv")
+GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
 # Initialize geocoder
 geolocator = Nominatim(user_agent="route_logger")
+
+# Frontend expects these keys:
+EXPECTED_COLUMNS = [
+    "company",
+    "account_number",
+    "country",
+    "postcode",
+    "status",
+    "current_spend",
+    "tagged_customers",
+    "date_of_last_visit",
+    "visit_frequency",
+    "next_due_date",
+]
+
+# Map your CSV headers -> expected keys
+CSV_COLUMN_MAP = {
+    "Company": "company",
+    "Account Number": "account_number",
+    "Country": "country",
+    "Postcode": "postcode",
+    "Status": "status",
+    "Current Year Spend": "current_spend",
+    "Tagged Customer": "tagged_customers",
+    "Date of Last Visit": "date_of_last_visit",
+    "Visit Frequency (Days)": "visit_frequency",
+    "Next Due Date": "next_due_date",
+    # Optional extras (keep them if present)
+    "Area Code": "area_code",
+    "Multi Site?": "multi_site",
+    "Urgency": "urgency",
+}
+
+
+def _parse_date_to_iso(value):
+    """
+    Converts incoming date values to 'YYYY-MM-DD' (or returns None).
+    Handles:
+      - NaN/None
+      - '27/04/2026'
+      - '2026-04-27'
+      - '27-04-2026'
+      - actual datetime values
+    """
+    if value is None:
+        return None
+
+    # pandas NaN -> None
+    if isinstance(value, float) and np.isnan(value):
+        return None
+
+    # Already a datetime?
+    if isinstance(value, (datetime, pd.Timestamp)):
+        return value.strftime("%Y-%m-%d")
+
+    s = str(value).strip()
+    if not s or s.lower() in {"nan", "none", "null"}:
+        return None
+
+    # Try common formats
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(s, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+
+    # Fallback: let pandas try (best effort)
+    try:
+        dt = pd.to_datetime(s, errors="coerce", dayfirst=True)
+        if pd.isna(dt):
+            return None
+        return dt.strftime("%Y-%m-%d")
+    except Exception:
+        return None
+
+
+def _sanitize_df_for_json(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensures the dataframe contains JSON-safe values:
+    - NaN/NaT -> None
+    - inf -> None
+    """
+    df = df.replace([np.inf, -np.inf], np.nan)
+    df = df.where(pd.notnull(df), None)
+    return df
+
+
+def _normalize_import_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalise imported CSV to the schema expected by the frontend.
+    - Renames columns from your Excel/CSV headers
+    - Converts dates to ISO format
+    - Ensures numeric types for spend/frequency
+    - Ensures NaN becomes None
+    """
+    # Rename columns we recognise
+    rename_map = {c: CSV_COLUMN_MAP[c] for c in df.columns if c in CSV_COLUMN_MAP}
+    df = df.rename(columns=rename_map)
+
+    # If someone exported with slightly different casing/spaces, try a soft match
+    # (e.g. "Account number" vs "Account Number")
+    lower_map = {c.lower().strip(): c for c in df.columns}
+    for original, target in CSV_COLUMN_MAP.items():
+        key = original.lower().strip()
+        if key in lower_map and target not in df.columns:
+            df = df.rename(columns={lower_map[key]: target})
+
+    # Date conversions
+    if "date_of_last_visit" in df.columns:
+        df["date_of_last_visit"] = df["date_of_last_visit"].apply(_parse_date_to_iso)
+
+    if "next_due_date" in df.columns:
+        df["next_due_date"] = df["next_due_date"].apply(_parse_date_to_iso)
+
+    # Numeric conversions
+    if "current_spend" in df.columns:
+        df["current_spend"] = pd.to_numeric(df["current_spend"], errors="coerce")
+
+    if "visit_frequency" in df.columns:
+        df["visit_frequency"] = pd.to_numeric(df["visit_frequency"], errors="coerce")
+
+    # Booleans
+    if "tagged_customers" in df.columns:
+        df["tagged_customers"] = df["tagged_customers"].map(
+            lambda x: True if str(x).strip().lower() in {"true", "1", "yes"} else False
+            if str(x).strip().lower() in {"false", "0", "no"} else x
+        )
+
+    if "multi_site" in df.columns:
+        df["multi_site"] = df["multi_site"].map(
+            lambda x: True if str(x).strip().lower() in {"true", "1", "yes"} else False
+            if str(x).strip().lower() in {"false", "0", "no"} else x
+        )
+
+    df = _sanitize_df_for_json(df)
+
+    return df
+
+
+def load_customers() -> pd.DataFrame:
+    """Load customer data from CSV file"""
+    if os.path.exists(DATA_FILE):
+        df = pd.read_csv(DATA_FILE)
+        # normalise in case the stored file has old headers
+        df = _normalize_import_df(df)
+        return df
+    return pd.DataFrame(columns=EXPECTED_COLUMNS)
 
 
 def save_customers(df: pd.DataFrame):
     """Save customer data to CSV file"""
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+    df = _sanitize_df_for_json(df)
     df.to_csv(DATA_FILE, index=False)
 
 
-def normalise_customer_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Convert common CSV headers into the snake_case keys the frontend expects.
-    Keeps extra columns but ensures required ones exist.
-    """
-    if df is None:
-        df = pd.DataFrame()
-
-    if not hasattr(df, "columns"):
-        df = pd.DataFrame(df)
-
-    df.columns = [str(c).strip() for c in df.columns]
-
-    col_map = {
-        "Company": "company",
-        "Account Number": "account_number",
-        "Account #": "account_number",
-        "Country": "country",
-        "Postcode": "postcode",
-        "Status": "status",
-        "Current Year Spend": "current_spend",
-        "Current Spend": "current_spend",
-        "Tagged Customer": "tagged_customers",
-        "Tier": "tagged_customers",
-        "Date of Last Visit": "date_of_last_visit",
-        "Last Visit": "date_of_last_visit",
-        "Visit Frequency (Days)": "visit_frequency",
-        "Frequency (days)": "visit_frequency",
-        "Next Due Date": "next_due_date",
-        "Next Due": "next_due_date",
-    }
-
-    df = df.rename(columns={c: col_map.get(c, c) for c in df.columns})
-
-    if "postcode" in df.columns:
-        df["postcode"] = df["postcode"].astype(str).str.strip()
-
-    if "country" in df.columns:
-        df["country"] = df["country"].fillna("UK").astype(str).str.strip()
-
-    if "current_spend" in df.columns:
-        df["current_spend"] = (
-            df["current_spend"]
-            .astype(str)
-            .str.replace("£", "", regex=False)
-            .str.replace(",", "", regex=False)
-        )
-        df["current_spend"] = pd.to_numeric(df["current_spend"], errors="coerce").fillna(0)
-
-    required_defaults = {
-        "company": "",
-        "account_number": "",
-        "country": "UK",
-        "postcode": "",
-        "status": "",
-        "current_spend": 0,
-        "tagged_customers": "",
-        "date_of_last_visit": "",
-        "visit_frequency": "",
-        "next_due_date": "",
-    }
-
-    for col, default in required_defaults.items():
-        if col not in df.columns:
-            df[col] = default
-
-    return df
-
-
-def load_customers():
-    """Load customer data from CSV file"""
-    if os.path.exists(DATA_FILE):
-        df = pd.read_csv(DATA_FILE)
-        df = normalise_customer_columns(df)
-        return df
-    return pd.DataFrame()
-
-
 @lru_cache(maxsize=1000)
-def geocode_postcode(postcode, country='UK'):
+def geocode_postcode(postcode, country="UK"):
     """Geocode a postcode to get latitude and longitude"""
     try:
         location = geolocator.geocode(f"{postcode}, {country}")
@@ -123,17 +194,23 @@ def geocode_postcode(postcode, country='UK'):
 def calculate_next_due_date(last_visit_date, visit_frequency):
     """Calculate next due date based on last visit and frequency"""
     try:
-        last_visit = datetime.strptime(last_visit_date, '%Y-%m-%d')
-        frequency_days = int(visit_frequency)
+        if not last_visit_date:
+            return None
+        last_visit_iso = _parse_date_to_iso(last_visit_date)
+        if not last_visit_iso:
+            return None
+
+        last_visit = datetime.strptime(last_visit_iso, "%Y-%m-%d")
+        frequency_days = int(float(visit_frequency))  # allows "56.0"
         next_due = last_visit + timedelta(days=frequency_days)
-        return next_due.strftime('%Y-%m-%d')
-    except:
+        return next_due.strftime("%Y-%m-%d")
+    except Exception:
         return None
 
 
 def group_customers_by_proximity(customers_df, max_distance_km=10):
     """Group customers based on proximity using their postcodes"""
-    customers = customers_df.to_dict('records')
+    customers = customers_df.to_dict("records")
     groups = []
     ungrouped = list(range(len(customers)))
 
@@ -144,8 +221,8 @@ def group_customers_by_proximity(customers_df, max_distance_km=10):
 
         current_customer = customers[current_idx]
         current_coords = geocode_postcode(
-            current_customer.get('postcode', ''),
-            current_customer.get('country', 'UK')
+            current_customer.get("postcode", ""),
+            current_customer.get("country", "UK"),
         )
 
         if not current_coords:
@@ -156,9 +233,10 @@ def group_customers_by_proximity(customers_df, max_distance_km=10):
         for idx in ungrouped[:]:
             customer = customers[idx]
             coords = geocode_postcode(
-                customer.get('postcode', ''),
-                customer.get('country', 'UK')
+                customer.get("postcode", ""),
+                customer.get("country", "UK"),
             )
+
             if coords:
                 distance = geodesic(current_coords, coords).kilometers
                 if distance <= max_distance_km:
@@ -181,23 +259,23 @@ def optimize_route_with_google_maps(waypoints, api_key):
     try:
         origin = waypoints[0]
         destination = waypoints[-1]
-        waypoint_str = '|'.join([f"{w[0]},{w[1]}" for w in waypoints[1:-1]])
+        waypoint_str = "|".join([f"{w[0]},{w[1]}" for w in waypoints[1:-1]])
 
         url = "https://maps.googleapis.com/maps/api/directions/json"
         params = {
-            'origin': f"{origin[0]},{origin[1]}",
-            'destination': f"{destination[0]},{destination[1]}",
-            'waypoints': f"optimize:true|{waypoint_str}" if waypoint_str else '',
-            'key': api_key
+            "origin": f"{origin[0]},{origin[1]}",
+            "destination": f"{destination[0]},{destination[1]}",
+            "waypoints": f"optimize:true|{waypoint_str}" if waypoint_str else "",
+            "key": api_key,
         }
 
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
         data = response.json()
 
-        if data.get('status') == 'OK':
-            route = data['routes'][0]
-            waypoint_order = route.get('waypoint_order', [])
-            legs = route.get('legs', [])
+        if data.get("status") == "OK":
+            route = data["routes"][0]
+            waypoint_order = route.get("waypoint_order", [])
+            legs = route.get("legs", [])
             return waypoint_order, legs
     except Exception as e:
         print(f"Google Maps API error: {e}")
@@ -205,162 +283,175 @@ def optimize_route_with_google_maps(waypoints, api_key):
     return [], []
 
 
-# ---------------------------
-# Customers (GET/POST/PUT)
-# Add non-/api aliases to prevent frontend 404 -> HTML -> JSON parse error
-# ---------------------------
+def _get_customers_payload():
+    df = load_customers()
 
-@app.route('/api/customers', methods=['GET'])
-@app.route('/customers', methods=['GET'])
+    # Ensure expected columns exist (even if file was saved previously without them)
+    for col in EXPECTED_COLUMNS:
+        if col not in df.columns:
+            df[col] = None
+
+    # Calculate next due dates if missing
+    for idx in range(len(df)):
+        nd = df.at[idx, "next_due_date"] if "next_due_date" in df.columns else None
+        if not nd:
+            lv = df.at[idx, "date_of_last_visit"]
+            vf = df.at[idx, "visit_frequency"]
+            if lv and vf:
+                df.at[idx, "next_due_date"] = calculate_next_due_date(lv, vf)
+
+    df = _sanitize_df_for_json(df)
+    customers = df.to_dict("records")
+    return customers
+
+
+# -------------------------
+# ROUTES (support BOTH /api/* and non-/api for frontend compatibility)
+# -------------------------
+
+@app.route("/api/customers", methods=["GET"])
+@app.route("/customers", methods=["GET"])
 def get_customers():
-    """Get all customers"""
-    df = load_customers()
-    customers = df.to_dict('records')
-
-    for customer in customers:
-        if 'next_due_date' not in customer or pd.isna(customer.get('next_due_date')):
-            if customer.get('date_of_last_visit') and customer.get('visit_frequency'):
-                customer['next_due_date'] = calculate_next_due_date(
-                    customer.get('date_of_last_visit', ''),
-                    customer.get('visit_frequency', '')
-                )
-
-    return jsonify(customers)
+    return jsonify(_get_customers_payload())
 
 
-@app.route('/api/customers', methods=['POST'])
-@app.route('/customers', methods=['POST'])
+@app.route("/api/customers", methods=["POST"])
+@app.route("/customers", methods=["POST"])
 def add_customer():
-    """Add a new customer"""
     data = request.json or {}
     df = load_customers()
-
     new_customer = pd.DataFrame([data])
-    new_customer = normalise_customer_columns(new_customer)
-
     df = pd.concat([df, new_customer], ignore_index=True)
+    df = _normalize_import_df(df)  # keep schema consistent
     save_customers(df)
+    return jsonify({"message": "Customer added successfully", "customer": data})
 
-    return jsonify({'message': 'Customer added successfully', 'customer': data})
 
-
-@app.route('/api/customers/<int:customer_id>', methods=['PUT'])
-@app.route('/customers/<int:customer_id>', methods=['PUT'])
+@app.route("/api/customers/<int:customer_id>", methods=["PUT"])
+@app.route("/customers/<int:customer_id>", methods=["PUT"])
 def update_customer(customer_id):
-    """Update a customer"""
     data = request.json or {}
     df = load_customers()
 
-    if customer_id < len(df):
+    if 0 <= customer_id < len(df):
         for key, value in data.items():
             df.at[customer_id, key] = value
-        df = normalise_customer_columns(df)
+
+        df = _normalize_import_df(df)
         save_customers(df)
-        return jsonify({'message': 'Customer updated successfully'})
+        return jsonify({"message": "Customer updated successfully"})
 
-    return jsonify({'error': 'Customer not found'}), 404
+    return jsonify({"error": "Customer not found"}), 404
 
 
-# ---------------------------
-# Import / Export (CSV + Raw JSON)
-# ---------------------------
-
-@app.route('/api/customers/import', methods=['POST'])
-@app.route('/customers/import', methods=['POST'])
+@app.route("/api/customers/import", methods=["POST"])
+@app.route("/customers/import", methods=["POST"])
 def import_customers():
     """Import customers from CSV file"""
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided (expected form field name "file")'}), 400
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
 
     try:
         df = pd.read_csv(file)
-        df = normalise_customer_columns(df)
+
+        df = _normalize_import_df(df)
+
+        missing = [c for c in EXPECTED_COLUMNS if c not in df.columns]
+        if missing:
+            return jsonify({
+                "error": "CSV is missing required columns after mapping.",
+                "missing": missing,
+                "hint": "Your CSV headers should include: Company, Account Number, Country, Postcode, Status, Current Year Spend, Tagged Customer, Date of Last Visit, Visit Frequency (Days), Next Due Date"
+            }), 400
+
         save_customers(df)
-        return jsonify({'message': f'Imported {len(df)} customers successfully'})
+        return jsonify({"message": f"Imported {len(df)} customers successfully"})
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 
-@app.route('/api/customers/import/raw', methods=['POST'])
-@app.route('/customers/import/raw', methods=['POST'])
+@app.route("/api/customers/import/raw", methods=["POST"])
+@app.route("/customers/import/raw", methods=["POST"])
 def import_customers_raw():
     """Import customers from raw JSON data"""
     data = request.json
 
     if not data:
-        return jsonify({'error': 'No data provided'}), 400
+        return jsonify({"error": "No data provided"}), 400
+
     if not isinstance(data, list):
-        return jsonify({'error': 'Data must be an array of customer objects'}), 400
+        return jsonify({"error": "Data must be an array of customer objects"}), 400
+
     if len(data) == 0:
-        return jsonify({'error': 'Data array is empty'}), 400
+        return jsonify({"error": "Data array is empty"}), 400
 
     try:
         df = pd.DataFrame(data)
-        df = normalise_customer_columns(df)
+        df = _normalize_import_df(df)
+
+        missing = [c for c in EXPECTED_COLUMNS if c not in df.columns]
+        if missing:
+            return jsonify({"error": "Data is missing required fields", "missing": missing}), 400
+
         save_customers(df)
-        return jsonify({'message': f'Imported {len(df)} customers successfully'})
+        return jsonify({"message": f"Imported {len(df)} customers successfully"})
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 
-@app.route('/api/customers/export', methods=['GET'])
-@app.route('/customers/export', methods=['GET'])
+@app.route("/api/customers/export", methods=["GET"])
+@app.route("/customers/export", methods=["GET"])
 def export_customers():
     """Export customers to CSV file"""
     df = load_customers()
-    export_path = os.path.join(os.path.dirname(__file__), 'data', 'export.csv')
+    export_path = os.path.join(os.path.dirname(__file__), "data", "export.csv")
     df.to_csv(export_path, index=False)
-    return send_file(export_path, as_attachment=True, download_name='customers_export.csv')
+    return send_file(export_path, as_attachment=True, download_name="customers_export.csv")
 
 
-# ---------------------------
-# Grouping + Route Optimize
-# ---------------------------
-
-@app.route('/api/groups', methods=['POST'])
-@app.route('/groups', methods=['POST'])
+@app.route("/api/groups", methods=["POST"])
+@app.route("/groups", methods=["POST"])
 def create_groups():
     """Group customers by proximity"""
     data = request.json or {}
-    max_distance = data.get('max_distance_km', 10)
+    max_distance = data.get("max_distance_km", 10)
 
     df = load_customers()
     groups = group_customers_by_proximity(df, max_distance)
 
     result = []
     for i, group_indices in enumerate(groups):
-        group_customers = df.iloc[group_indices].to_dict('records')
-        result.append({
-            'group_id': i,
-            'customers': group_customers,
-            'count': len(group_customers)
-        })
+        group_customers = df.iloc[group_indices].to_dict("records")
+        result.append({"group_id": i, "customers": group_customers, "count": len(group_customers)})
 
     return jsonify(result)
 
 
-@app.route('/api/route/optimize', methods=['POST'])
-@app.route('/route/optimize', methods=['POST'])
+@app.route("/api/route/optimize", methods=["POST"])
+@app.route("/route/optimize", methods=["POST"])
 def optimize_route():
     """Optimize route for given customers"""
     data = request.json or {}
-    customer_ids = data.get('customer_ids', [])
+    customer_ids = data.get("customer_ids", [])
 
     df = load_customers()
-    customers = df.iloc[customer_ids].to_dict('records')
+    if len(customer_ids) == 0:
+        return jsonify({"error": "No customers selected"}), 400
+
+    customers = df.iloc[customer_ids].to_dict("records")
 
     waypoints = []
     for customer in customers:
-        coords = geocode_postcode(customer.get('postcode', ''), customer.get('country', 'UK'))
+        coords = geocode_postcode(customer.get("postcode", ""), customer.get("country", "UK"))
         if coords:
             waypoints.append(coords)
 
     if len(waypoints) < 2:
-        return jsonify({'error': 'Need at least 2 valid locations'}), 400
+        return jsonify({"error": "Need at least 2 valid locations"}), 400
 
     optimized_order, legs = optimize_route_with_google_maps(waypoints, GOOGLE_MAPS_API_KEY)
 
@@ -371,36 +462,33 @@ def optimize_route():
     else:
         optimized_customers = customers
 
-    return jsonify({
-        'optimized_customers': optimized_customers,
-        'route_legs': legs,
-        'waypoints': waypoints
-    })
+    return jsonify({"optimized_customers": optimized_customers, "route_legs": legs, "waypoints": waypoints})
 
 
-@app.route('/api/overdue', methods=['GET'])
-@app.route('/overdue', methods=['GET'])
+@app.route("/api/overdue", methods=["GET"])
+@app.route("/overdue", methods=["GET"])
 def get_overdue_customers():
     """Get customers with overdue visits"""
     df = load_customers()
-    today = datetime.now().strftime('%Y-%m-%d')
+    today = datetime.now().strftime("%Y-%m-%d")
 
     overdue = []
     for _, customer in df.iterrows():
-        next_due = customer.get('next_due_date')
-        if next_due and str(next_due) < today:
+        next_due = customer.get("next_due_date")
+        next_due_iso = _parse_date_to_iso(next_due)
+        if next_due_iso and next_due_iso < today:
             overdue.append(customer.to_dict())
 
     return jsonify(overdue)
 
 
-@app.route('/api/health', methods=['GET'])
-@app.route('/health', methods=['GET'])
+@app.route("/api/health", methods=["GET"])
+@app.route("/health", methods=["GET"])
 def health_check():
-    """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
 
-if __name__ == '__main__':
-    debug_mode = os.environ.get('FLASK_ENV') == 'development'
-    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    # Only enable debug mode in development environment
+    debug_mode = os.environ.get("FLASK_ENV") == "development"
+    app.run(debug=debug_mode, host="0.0.0.0", port=5000)
