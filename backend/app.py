@@ -488,38 +488,49 @@ def optimize_route():
         # Google Maps returns the order of intermediate waypoints (excluding first and last)
         # We need to map this back to our customers
         
-        start_offset = 1 if start_postcode else 0
-        
-        if start_postcode and end_postcode:
-            # Start + customers + end
-            if len(customers) > 0:
-                reordered_customers = [customers[i] for i in optimized_order]
+        try:
+            if start_postcode and end_postcode:
+                # Start + customers + end
+                if len(customers) > 0 and all(0 <= i < len(customers) for i in optimized_order):
+                    reordered_customers = [customers[i] for i in optimized_order]
+                else:
+                    reordered_customers = []
+            elif start_postcode:
+                # Start + customers (last customer is the end)
+                if len(customers) > 1:
+                    middle_customers = customers[:-1]
+                    if all(0 <= i < len(middle_customers) for i in optimized_order):
+                        reordered_middle = [middle_customers[i] for i in optimized_order]
+                        reordered_customers = reordered_middle + [customers[-1]]
+                    else:
+                        reordered_customers = customers
+                else:
+                    reordered_customers = customers
+            elif end_postcode:
+                # First customer is start + middle customers + end
+                if len(customers) > 1:
+                    middle_customers = customers[1:]
+                    if all(0 <= i < len(middle_customers) for i in optimized_order):
+                        reordered_middle = [middle_customers[i] for i in optimized_order]
+                        reordered_customers = [customers[0]] + reordered_middle
+                    else:
+                        reordered_customers = customers
+                else:
+                    reordered_customers = customers
             else:
-                reordered_customers = []
-        elif start_postcode:
-            # Start + customers (last customer is the end)
-            if len(customers) > 1:
-                middle_customers = customers[:-1]
-                reordered_middle = [middle_customers[i] for i in optimized_order]
-                reordered_customers = reordered_middle + [customers[-1]]
-            else:
-                reordered_customers = customers
-        elif end_postcode:
-            # First customer is start + middle customers + end
-            if len(customers) > 1:
-                middle_customers = customers[1:]
-                reordered_middle = [middle_customers[i] for i in optimized_order]
-                reordered_customers = [customers[0]] + reordered_middle
-            else:
-                reordered_customers = customers
-        else:
-            # Just customers, first and last are fixed
-            if len(customers) > 2:
-                middle_customers = customers[1:-1]
-                reordered_middle = [middle_customers[i] for i in optimized_order]
-                reordered_customers = [customers[0]] + reordered_middle + [customers[-1]]
-            else:
-                reordered_customers = customers
+                # Just customers, first and last are fixed
+                if len(customers) > 2:
+                    middle_customers = customers[1:-1]
+                    if all(0 <= i < len(middle_customers) for i in optimized_order):
+                        reordered_middle = [middle_customers[i] for i in optimized_order]
+                        reordered_customers = [customers[0]] + reordered_middle + [customers[-1]]
+                    else:
+                        reordered_customers = customers
+                else:
+                    reordered_customers = customers
+        except (IndexError, TypeError) as e:
+            print(f"Error reordering customers: {e}")
+            reordered_customers = customers
         
         optimized_customers = reordered_customers
     else:

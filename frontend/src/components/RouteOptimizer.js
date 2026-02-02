@@ -11,8 +11,11 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [endPostcode, setEndPostcode] = useState('');
 
   const handleOptimizeRoute = async () => {
-    if (selectedCustomers.length < 2 && !startPostcode && !endPostcode) {
-      setError('Please select at least 2 customers to optimize a route, or provide start/end postcodes');
+    // Count total waypoints: customers + optional start/end postcodes
+    const totalWaypoints = selectedCustomers.length + (startPostcode ? 1 : 0) + (endPostcode ? 1 : 0);
+    
+    if (totalWaypoints < 2) {
+      setError('Please select customers or provide start/end postcodes (minimum 2 total waypoints)');
       return;
     }
 
