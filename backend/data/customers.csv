@@ -1,0 +1,11 @@
+company,account_number,country,postcode,status,current_spend,tagged_customers,multi_site,area_code,date_of_last_visit,visit_frequency,next_due_date
+Acme Corp,ACC001,UK,SW1A 1AA,Active,25000,Premium,Yes,SW,2024-01-15,30,2024-02-14
+Tech Solutions Ltd,ACC002,UK,SW1A 2AA,Active,15000,Standard,No,SW,2024-01-20,60,2024-03-20
+Global Industries,ACC003,UK,E1 6AN,Active,45000,Premium,Yes,E,2024-01-10,14,2024-01-24
+Metro Services,ACC004,UK,E2 8DY,Active,12000,Standard,No,E,2024-01-25,90,2024-04-24
+City Logistics,ACC005,UK,NW1 2DB,Active,30000,Premium,No,NW,2024-01-18,30,2024-02-17
+Smart Systems,ACC006,UK,NW1 3BH,Active,20000,Standard,Yes,NW,2024-01-22,45,2024-03-07
+Digital Hub,ACC007,UK,SE1 9SG,Active,35000,Premium,No,SE,2024-01-12,21,2024-02-02
+Innovation Co,ACC008,UK,SE1 7TP,Active,18000,Standard,No,SE,2024-01-28,60,2024-03-28
+Enterprise Group,ACC009,UK,W1B 3AG,Active,50000,Premium,Yes,W,2024-01-08,14,2024-01-22
+Venture Partners,ACC010,UK,W1D 4AP,Active,22000,Standard,No,W,2024-01-30,30,2024-03-01

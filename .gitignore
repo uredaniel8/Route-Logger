@@ -1,0 +1,15 @@
+node_modules/
+build/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+*.pyc
+__pycache__/
+venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+backend/data/export.csv

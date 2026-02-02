@@ -1,0 +1,282 @@
+.route-optimizer {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.optimizer-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+}
+
+.optimizer-header p {
+  margin: 0 0 1.5rem 0;
+  color: #718096;
+}
+
+.optimizer-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+
+.selection-panel,
+.route-panel {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.selection-panel h3,
+.route-panel h3 {
+  margin: 0 0 1rem 0;
+  color: #2d3748;
+}
+
+.no-selection {
+  color: #a0aec0;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.customer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.customer-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background-color: #f7fafc;
+  border-radius: 4px;
+  border-left: 3px solid #4299e1;
+}
+
+.customer-list li.overdue {
+  border-left-color: #fc8181;
+  background-color: #fff5f5;
+}
+
+.customer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.customer-info strong {
+  color: #2d3748;
+}
+
+.customer-info .postcode {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.overdue-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background-color: #fed7d7;
+  color: #c53030;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.remove-btn {
+  padding: 0.25rem 0.75rem;
+  background-color: #fc8181;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.remove-btn:hover {
+  background-color: #f56565;
+}
+
+.optimize-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.optimize-btn:hover:not(:disabled) {
+  background-color: #38a169;
+}
+
+.optimize-btn:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #fed7d7;
+  color: #c53030;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.no-route {
+  text-align: center;
+  color: #a0aec0;
+  padding: 3rem 1rem;
+}
+
+.route-result {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.route-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat {
+  padding: 1rem;
+  background-color: #f7fafc;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  color: #718096;
+  font-size: 0.85rem;
+}
+
+.stat-value {
+  color: #2d3748;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.route-list h4 {
+  margin: 0 0 1rem 0;
+  color: #2d3748;
+}
+
+.route-list ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: stop-counter;
+}
+
+.route-list li {
+  margin-bottom: 0.75rem;
+}
+
+.route-list li.overdue .route-stop {
+  background-color: #fff5f5;
+  border-left-color: #fc8181;
+}
+
+.route-stop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f7fafc;
+  border-radius: 4px;
+  border-left: 3px solid #4299e1;
+}
+
+.stop-number {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4299e1;
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.stop-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stop-info strong {
+  color: #2d3748;
+}
+
+.stop-details {
+  display: flex;
+  gap: 0.5rem;
+  color: #718096;
+  font-size: 0.85rem;
+}
+
+.overdue-text {
+  color: #c53030;
+  font-weight: 600;
+}
+
+.stop-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.move-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background-color: #e2e8f0;
+  color: #2d3748;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.move-btn:hover {
+  background-color: #cbd5e0;
+}
+
+.export-route-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #38a169;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.export-route-btn:hover {
+  background-color: #2f855a;
+}
+
+@media (max-width: 1024px) {
+  .optimizer-content {
+    grid-template-columns: 1fr;
+  }
+}
