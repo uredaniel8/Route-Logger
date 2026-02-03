@@ -27,6 +27,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 56.4907, lng: -4.2026 });
   const [geocoding, setGeocoding] = useState(false);
+  const [mapsLoadError, setMapsLoadError] = useState(false);
 
   const handleOptimizeRoute = async () => {
     // Validate postcodes format before sending request (basic validation)
@@ -107,6 +108,53 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
 
       const data = await response.json();
       setOptimizedRoute(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateRandomRoute = async (areaCode, maxCustomers) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const requestBody = {
+        area_code: areaCode,
+        max_customers: maxCustomers,
+      };
+
+      const response = await fetch(`${API_URL}/route/random`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMessage = errorData.error || 'Failed to generate random route';
+        
+        if (errorData.available_area_codes && errorData.available_area_codes.length > 0) {
+          errorMessage += '\n\nAvailable area codes: ' + errorData.available_area_codes.join(', ');
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      
+      // Update selected customers with the randomly generated list
+      onSelectionChange(data.customer_ids);
+      
+      // Show success message
+      const criteria = data.selection_criteria;
+      const message = `Generated random route with ${data.count} customers\n` +
+        `Prioritized by: ${criteria.prioritized_by.replace(/_/g, ' ')}\n` +
+        (criteria.area_code_filter ? `Area code: ${criteria.area_code_filter}\n` : '') +
+        '\nCustomers have been selected. Click "Optimize Route" to generate the optimized order.';
+      
+      alert(message);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -228,8 +276,27 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   return (
     <div className="route-optimizer">
       <div className="optimizer-header">
-        <h2>Route Optimizer</h2>
-        <p>Select customers from the table view, then optimize their visit route.</p>
+        <h2>🗺️ Route Optimizer</h2>
+        <p>Select customers from the table view, then optimize their visit route using Google Maps.</p>
+        {selectedCustomers.length > 0 && (
+          <div className="selection-summary">
+            <span className="summary-badge">{selectedCustomers.length} customer{selectedCustomers.length !== 1 ? 's' : ''} selected</span>
+            {selectedCustomers.length >= 2 && (
+              <span className="ready-badge">✓ Ready to optimize</span>
+            )}
+          </div>
+        )}
+        {selectedCustomers.length === 0 && (
+          <div className="help-banner">
+            <h4>💡 How to use the Route Optimizer:</h4>
+            <ol>
+              <li>Use the <strong>Random Route Generator</strong> below to automatically select customers, OR</li>
+              <li>Go to the <strong>Customers</strong> tab and manually check the boxes next to customers you want to visit</li>
+              <li>Optionally specify start/end postcodes for your journey</li>
+              <li>Click <strong>Optimize Route</strong> to calculate the best order</li>
+            </ol>
+          </div>
+        )}
       </div>
 
       <div className="optimizer-content">
@@ -264,6 +331,59 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
             </div>
           </div>
 
+          <div className="random-generator-section">
+            <h3>🎲 Random Route Generator</h3>
+            <p className="section-description">
+              Automatically select customers who haven't been visited in the longest time, filtered by area code if specified.
+              This helps ensure priority visits to customers who need attention.
+            </p>
+            
+            <div className="route-config">
+              <div className="config-field">
+                <label htmlFor="random-area-code">
+                  Area Code Filter (Optional)
+                  <span className="info-tooltip" title="Filter customers by postal area code (e.g., SW for South West London, EC for East Central). Leave blank to include all customers.">ℹ️</span>
+                </label>
+                <input
+                  id="random-area-code"
+                  type="text"
+                  placeholder="e.g., SW, EC, W"
+                  className="postcode-input"
+                />
+                <small>Leave empty to include all area codes. Use standard UK postal area codes.</small>
+              </div>
+              
+              <div className="config-field">
+                <label htmlFor="random-max-customers">
+                  Max Customers
+                  <span className="info-tooltip" title="Maximum number of customers to include in the generated route">ℹ️</span>
+                </label>
+                <input
+                  id="random-max-customers"
+                  type="number"
+                  min="1"
+                  max="50"
+                  defaultValue="10"
+                  className="postcode-input"
+                />
+                <small>Number of customers to include (1-50). Prioritized by longest time since last visit.</small>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => {
+                const areaCode = document.getElementById('random-area-code').value.trim();
+                const maxCustomers = parseInt(document.getElementById('random-max-customers').value) || 10;
+                handleGenerateRandomRoute(areaCode, maxCustomers);
+              }}
+              disabled={loading}
+              className="random-btn"
+              title="Generate a random route based on visit priority"
+            >
+              {loading ? '⏳ Generating...' : '🎲 Generate Random Route'}
+            </button>
+          </div>
+
           <h3>Selected Customers ({selectedCustomers.length})</h3>
           {selectedCustomersList.length === 0 ? (
             <p className="no-selection">No customers selected. Go to the Customers tab to select customers.</p>
@@ -291,8 +411,13 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
             onClick={handleOptimizeRoute}
             disabled={(selectedCustomers.length + (startPostcode ? 1 : 0) + (endPostcode ? 1 : 0)) < 2 || loading}
             className="optimize-btn"
+            title={
+              (selectedCustomers.length + (startPostcode ? 1 : 0) + (endPostcode ? 1 : 0)) < 2 
+                ? 'Select at least 2 customers or provide start/end postcodes' 
+                : 'Optimize the route using Google Maps'
+            }
           >
-            {loading ? 'Optimizing...' : 'Optimize Route'}
+            {loading ? '⏳ Optimizing...' : '🚀 Optimize Route'}
           </button>
         </div>
 
@@ -393,7 +518,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
               </button>
 
               {/* Route Visualization Map */}
-              {GOOGLE_MAPS_API_KEY && (
+              {GOOGLE_MAPS_API_KEY && !mapsLoadError && (
                 <div className="route-map-container">
                   <h4>Route Visualization</h4>
                   {geocoding && (
@@ -402,11 +527,19 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
                     </div>
                   )}
                   {routeCoordinates.length > 0 ? (
-                    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+                    <LoadScript 
+                      googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                      onError={() => {
+                        console.error('Failed to load Google Maps API in RouteOptimizer');
+                        setMapsLoadError(true);
+                      }}
+                    >
                       <GoogleMap
                         mapContainerStyle={routeMapContainerStyle}
                         center={mapCenter}
                         zoom={10}
+                        onLoad={() => {}}
+                        onUnmount={() => {}}
                       >
                         {/* Draw polyline connecting all stops */}
                         <Polyline
@@ -452,6 +585,12 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
                       <p>Unable to display route map. Some locations could not be geocoded.</p>
                     </div>
                   )}
+                </div>
+              )}
+              {GOOGLE_MAPS_API_KEY && mapsLoadError && (
+                <div className="map-placeholder">
+                  <h4>⚠️ Map Loading Error</h4>
+                  <p>Failed to load Google Maps. Please check your API key configuration.</p>
                 </div>
               )}
             </div>
