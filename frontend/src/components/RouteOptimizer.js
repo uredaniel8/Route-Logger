@@ -276,8 +276,27 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
   return (
     <div className="route-optimizer">
       <div className="optimizer-header">
-        <h2>Route Optimizer</h2>
-        <p>Select customers from the table view, then optimize their visit route.</p>
+        <h2>🗺️ Route Optimizer</h2>
+        <p>Select customers from the table view, then optimize their visit route using Google Maps.</p>
+        {selectedCustomers.length > 0 && (
+          <div className="selection-summary">
+            <span className="summary-badge">{selectedCustomers.length} customer{selectedCustomers.length !== 1 ? 's' : ''} selected</span>
+            {selectedCustomers.length >= 2 && (
+              <span className="ready-badge">✓ Ready to optimize</span>
+            )}
+          </div>
+        )}
+        {selectedCustomers.length === 0 && (
+          <div className="help-banner">
+            <h4>💡 How to use the Route Optimizer:</h4>
+            <ol>
+              <li>Use the <strong>Random Route Generator</strong> below to automatically select customers, OR</li>
+              <li>Go to the <strong>Customers</strong> tab and manually check the boxes next to customers you want to visit</li>
+              <li>Optionally specify start/end postcodes for your journey</li>
+              <li>Click <strong>Optimize Route</strong> to calculate the best order</li>
+            </ol>
+          </div>
+        )}
       </div>
 
       <div className="optimizer-content">
@@ -314,22 +333,31 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
 
           <div className="random-generator-section">
             <h3>🎲 Random Route Generator</h3>
-            <p className="section-description">Generate a random route prioritizing customers who haven't been visited in the longest time.</p>
+            <p className="section-description">
+              Automatically select customers who haven't been visited in the longest time, filtered by area code if specified.
+              This helps ensure priority visits to customers who need attention.
+            </p>
             
             <div className="route-config">
               <div className="config-field">
-                <label htmlFor="random-area-code">Area Code Filter (Optional)</label>
+                <label htmlFor="random-area-code">
+                  Area Code Filter (Optional)
+                  <span className="info-tooltip" title="Filter customers by postal area code (e.g., SW for South West London, EC for East Central). Leave blank to include all customers.">ℹ️</span>
+                </label>
                 <input
                   id="random-area-code"
                   type="text"
                   placeholder="e.g., SW, EC, W"
                   className="postcode-input"
                 />
-                <small>Leave empty to include all area codes</small>
+                <small>Leave empty to include all area codes. Use standard UK postal area codes.</small>
               </div>
               
               <div className="config-field">
-                <label htmlFor="random-max-customers">Max Customers</label>
+                <label htmlFor="random-max-customers">
+                  Max Customers
+                  <span className="info-tooltip" title="Maximum number of customers to include in the generated route">ℹ️</span>
+                </label>
                 <input
                   id="random-max-customers"
                   type="number"
@@ -338,7 +366,7 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
                   defaultValue="10"
                   className="postcode-input"
                 />
-                <small>Number of customers to include (1-50)</small>
+                <small>Number of customers to include (1-50). Prioritized by longest time since last visit.</small>
               </div>
             </div>
             
@@ -350,8 +378,9 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
               }}
               disabled={loading}
               className="random-btn"
+              title="Generate a random route based on visit priority"
             >
-              {loading ? 'Generating...' : 'Generate Random Route'}
+              {loading ? '⏳ Generating...' : '🎲 Generate Random Route'}
             </button>
           </div>
 
@@ -382,8 +411,13 @@ function RouteOptimizer({ customers, selectedCustomers, onSelectionChange }) {
             onClick={handleOptimizeRoute}
             disabled={(selectedCustomers.length + (startPostcode ? 1 : 0) + (endPostcode ? 1 : 0)) < 2 || loading}
             className="optimize-btn"
+            title={
+              (selectedCustomers.length + (startPostcode ? 1 : 0) + (endPostcode ? 1 : 0)) < 2 
+                ? 'Select at least 2 customers or provide start/end postcodes' 
+                : 'Optimize the route using Google Maps'
+            }
           >
-            {loading ? 'Optimizing...' : 'Optimize Route'}
+            {loading ? '⏳ Optimizing...' : '🚀 Optimize Route'}
           </button>
         </div>
 
