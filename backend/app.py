@@ -621,7 +621,7 @@ def optimize_route():
                 if len(customers) > 0 and all(0 <= i < len(customers) for i in optimized_order):
                     reordered_customers = [customers[i] for i in optimized_order]
                 else:
-                    reordered_customers = []
+                    reordered_customers = customers
             elif start_postcode:
                 if len(customers) > 1:
                     middle_customers = customers[:-1]
@@ -686,6 +686,79 @@ def get_overdue_customers():
             overdue.append(customer.to_dict())
 
     return jsonify(overdue)
+
+
+@app.route("/api/route/random", methods=["POST"])
+@app.route("/route/random", methods=["POST"])
+def generate_random_route():
+    """Generate a random route prioritizing longest-unvisited customers within area code constraints"""
+    data = request.json or {}
+    area_code = data.get("area_code", "").strip()
+    max_customers = data.get("max_customers", 10)
+    
+    # Validate inputs
+    if max_customers < 1:
+        return jsonify({"error": "max_customers must be at least 1"}), 400
+    
+    if max_customers > 50:
+        return jsonify({"error": "max_customers cannot exceed 50"}), 400
+    
+    df = load_customers()
+    
+    if len(df) == 0:
+        return jsonify({"error": "No customers available"}), 400
+    
+    # Filter by area code if provided
+    if area_code:
+        filtered_df = df[df.get("area_code", pd.Series()).str.upper() == area_code.upper()]
+        if len(filtered_df) == 0:
+            return jsonify({
+                "error": f"No customers found with area code '{area_code}'",
+                "available_area_codes": sorted(df["area_code"].dropna().unique().tolist()) if "area_code" in df.columns else []
+            }), 404
+    else:
+        filtered_df = df
+    
+    # Calculate days since last visit for prioritization
+    today = datetime.now()
+    def calculate_days_since_visit(last_visit):
+        try:
+            if not last_visit:
+                return 9999  # Never visited - highest priority
+            last_visit_iso = _parse_date_to_iso(last_visit)
+            if not last_visit_iso:
+                return 9999
+            last_visit_date = datetime.strptime(last_visit_iso, "%Y-%m-%d")
+            return (today - last_visit_date).days
+        except Exception:
+            return 9999
+    
+    filtered_df = filtered_df.copy()
+    filtered_df["days_since_visit"] = filtered_df["date_of_last_visit"].apply(calculate_days_since_visit)
+    
+    # Sort by days since visit (longest first) and take top max_customers
+    sorted_df = filtered_df.sort_values("days_since_visit", ascending=False)
+    selected_df = sorted_df.head(max_customers)
+    
+    # Convert to list of indices in the original dataframe
+    customer_indices = selected_df.index.tolist()
+    
+    # Get the customer records
+    selected_customers = selected_df.to_dict("records")
+    
+    result = {
+        "customer_ids": customer_indices,
+        "customers": selected_customers,
+        "count": len(selected_customers),
+        "area_code": area_code if area_code else "all",
+        "selection_criteria": {
+            "prioritized_by": "longest_time_since_visit",
+            "area_code_filter": area_code if area_code else None,
+            "max_customers": max_customers
+        }
+    }
+    
+    return jsonify(result)
 
 
 @app.route("/api/health", methods=["GET"])

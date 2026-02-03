@@ -117,10 +117,31 @@ The frontend will run on `http://localhost:3000`
 1. Navigate to the "Customers" tab
 2. Select customers by checking the boxes in the leftmost column
 3. Go to the "Route Optimizer" tab
-4. Click "Optimize Route" to generate the most efficient visit order
-5. View route statistics (distance, time, number of stops)
-6. Manually reorder stops using the ↑ and ↓ buttons if needed
-7. Export the optimized route as a CSV file
+4. Optionally specify start and/or end postcodes for your journey
+5. Click "Optimize Route" to generate the most efficient visit order
+6. View route statistics (distance, time, number of stops)
+7. View the route visualization on an interactive map
+8. Manually reorder stops using the ↑ and ↓ buttons if needed
+9. Export the optimized route as a CSV file
+
+### Random Route Generator
+
+NEW FEATURE: Automatically generate routes based on customer visit priority!
+
+1. Navigate to the "Route Optimizer" tab
+2. In the "Random Route Generator" section:
+   - (Optional) Enter an area code to filter customers by location (e.g., "SW", "EC")
+   - Set the maximum number of customers to include (1-50, default 10)
+   - Click "Generate Random Route"
+3. The system automatically selects customers who haven't been visited in the longest time
+4. Selected customers are filtered by area code if specified, keeping routes manageable
+5. Once generated, click "Optimize Route" to get the best visit order
+
+**Use Cases:**
+- Quickly plan visits to overdue customers
+- Generate routes for specific geographic areas
+- Ensure fair coverage of all customers based on visit history
+- Manage territory assignments effectively
 
 ### Map View
 
@@ -148,7 +169,31 @@ The frontend will run on `http://localhost:3000`
 ### Route Operations
 - `POST /api/groups` - Group customers by proximity
 - `POST /api/route/optimize` - Optimize route for selected customers
+- `POST /api/route/random` - Generate random route based on visit priority and area code
 - `GET /api/overdue` - Get customers with overdue visits
+
+**Random Route Generation Parameters:**
+```json
+{
+  "area_code": "SW",        // Optional: filter by area code
+  "max_customers": 10       // Required: number of customers (1-50)
+}
+```
+
+**Random Route Response:**
+```json
+{
+  "customer_ids": [0, 5, 12, ...],
+  "customers": [...],
+  "count": 10,
+  "area_code": "SW",
+  "selection_criteria": {
+    "prioritized_by": "longest_time_since_visit",
+    "area_code_filter": "SW",
+    "max_customers": 10
+  }
+}
+```
 
 ### System
 - `GET /api/health` - Health check endpoint
