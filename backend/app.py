@@ -8,6 +8,7 @@ from flask_cors import CORS
 import pandas as pd
 import numpy as np
 import os
+import re
 from datetime import datetime, timedelta
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
@@ -21,8 +22,8 @@ CORS(app)
 DATA_FILE = os.path.join(os.path.dirname(__file__), "data", "customers.csv")
 GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
-# Initialize geocoder
-geolocator = Nominatim(user_agent="route_logger")
+# Initialize geocoder (fallback only)
+geolocator = Nominatim(user_agent="route_logger", timeout=10)
 
 # Frontend expects these keys:
 EXPECTED_COLUMNS = [
@@ -125,7 +126,7 @@ def _normalize_import_df(df: pd.DataFrame) -> pd.DataFrame:
     """
     # First normalize all column names to lowercase for case-insensitive matching
     df.columns = df.columns.str.strip().str.lower()
-    
+
     # Rename columns we recognise (now working with lowercase)
     rename_map = {c: CSV_COLUMN_MAP.get(c, c) for c in df.columns if c in CSV_COLUMN_MAP}
     df = df.rename(columns=rename_map)
@@ -187,19 +188,78 @@ def save_customers(df: pd.DataFrame):
     df.to_csv(DATA_FILE, index=False)
 
 
-@lru_cache(maxsize=1000)
+def _normalize_uk_postcode(postcode: str) -> str:
+    """Best-effort UK postcode normalization (uppercase + single space)."""
+    if not postcode:
+        return ""
+    s = str(postcode).strip().upper()
+    s = re.sub(r"\s+", "", s)  # remove spaces
+    # Insert a single space before the last 3 characters for typical UK format
+    if len(s) > 3:
+        s = s[:-3] + " " + s[-3:]
+    return s.strip()
+
+
+def _is_uk_country(country: str) -> bool:
+    if not country:
+        return True
+    c = str(country).strip().lower()
+    return c in {
+        "uk",
+        "united kingdom",
+        "great britain",
+        "gb",
+        "scotland",
+        "england",
+        "wales",
+        "northern ireland",
+    }
+
+
+@lru_cache(maxsize=5000)
 def geocode_postcode(postcode, country="UK"):
-    """Geocode a postcode to get latitude and longitude"""
+    """Geocode a postcode to (lat, lng).
+
+    Strategy:
+    1) For UK postcodes: use api.postcodes.io (fast + reliable for UK postcodes)
+    2) Fallback: Nominatim (OpenStreetMap) via geopy
+    """
     try:
-        # Attempt geocoding with the provided postcode and country
-        location = geolocator.geocode(f"{postcode}, {country}")
+        pc_raw = (postcode or "").strip()
+        if not pc_raw:
+            return None
+
+        # UK-first: api.postcodes.io
+        if _is_uk_country(country):
+            pc = _normalize_uk_postcode(pc_raw)
+            try:
+                r = requests.get(f"https://api.postcodes.io/postcodes/{requests.utils.quote(pc)}", timeout=10)
+                if r.status_code == 200:
+                    payload = r.json()
+                    result = payload.get("result") or {}
+                    lat = result.get("latitude")
+                    lng = result.get("longitude")
+                    if isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
+                        app.logger.info(f"Postcodes.io geocoded {pc} -> {lat}, {lng}")
+                        return (lat, lng)
+                elif r.status_code in (400, 404):
+                    app.logger.warning(f"Postcodes.io returned {r.status_code} for {pc}")
+            except Exception as e:
+                app.logger.warning(f"Postcodes.io error for {pc_raw}: {e}")
+
+        # Fallback: Nominatim (can be blocked by proxies / rate limits)
+        query = f"{pc_raw}, {country or 'UK'}"
+        location = geolocator.geocode(query, timeout=10)
         if location:
-            app.logger.info(f"Successfully geocoded {postcode}, {country} to {location.latitude}, {location.longitude}")
+            app.logger.info(
+                f"Nominatim geocoded {pc_raw}, {country} -> {location.latitude}, {location.longitude}"
+            )
             return (location.latitude, location.longitude)
-        else:
-            app.logger.warning(f"Geocoding returned no results for postcode: {postcode}, {country}")
+
+        app.logger.warning(f"Geocoding returned no results for: {pc_raw}, {country}")
     except Exception as e:
         app.logger.error(f"Geocoding error for {postcode}, {country}: {str(e)}", exc_info=True)
+
     return None
 
 
@@ -327,6 +387,28 @@ def get_customers():
     return jsonify(_get_customers_payload())
 
 
+@app.route("/api/customers/locations", methods=["GET"])
+@app.route("/customers/locations", methods=["GET"])
+def get_customer_locations():
+    """Return customers with lat/lng for mapping (geocoded + cached)."""
+    customers = _get_customers_payload()
+    results = []
+
+    for idx, c in enumerate(customers):
+        pc = c.get("postcode") or ""
+        country = c.get("country") or "UK"
+        coords = geocode_postcode(pc, country)
+        if coords:
+            lat, lng = coords
+            item = dict(c)
+            item["lat"] = lat
+            item["lng"] = lng
+            item["index"] = idx  # IMPORTANT: original row index used by selection/route optimizer
+            results.append(item)
+
+    return jsonify(results)
+
+
 @app.route("/api/customers", methods=["POST"])
 @app.route("/customers", methods=["POST"])
 def add_customer():
@@ -452,12 +534,10 @@ def optimize_route():
     start_postcode = data.get("start_postcode", "").strip()
     end_postcode = data.get("end_postcode", "").strip()
 
-    # Input validation
     df = load_customers()
-    
-    # Calculate potential waypoints for validation
+
     potential_waypoints = len(customer_ids) + (1 if start_postcode else 0) + (1 if end_postcode else 0)
-    
+
     if potential_waypoints < 2:
         return jsonify({
             "error": "Need at least 2 total waypoints",
@@ -466,19 +546,14 @@ def optimize_route():
             "required_waypoints": 2
         }), 400
 
-    # Get selected customers
     customers = df.iloc[customer_ids].to_dict("records") if customer_ids else []
 
-    # Build waypoints list with detailed error tracking
     waypoints = []
     geocoding_errors = []
-    
-    # Add start postcode if provided
+
     if start_postcode:
         start_coords = geocode_postcode(start_postcode, data.get("start_country", "UK"))
         if not start_coords:
-            error_msg = f"Could not geocode start postcode: '{start_postcode}'"
-            app.logger.warning(f"{error_msg}. Country: {data.get('start_country', 'UK')}")
             geocoding_errors.append({
                 "type": "start_postcode",
                 "value": start_postcode,
@@ -486,8 +561,7 @@ def optimize_route():
             })
         else:
             waypoints.append(start_coords)
-    
-    # Add customer waypoints
+
     failed_customers = []
     for customer in customers:
         customer_postcode = customer.get("postcode", "")
@@ -496,19 +570,15 @@ def optimize_route():
         if coords:
             waypoints.append(coords)
         else:
-            app.logger.warning(f"Could not geocode customer postcode: {customer_postcode}, {customer_country} for {customer.get('company', 'Unknown')}")
             failed_customers.append({
                 "company": customer.get("company", "Unknown"),
                 "postcode": customer_postcode,
                 "country": customer_country
             })
-    
-    # Add end postcode if provided
+
     if end_postcode:
         end_coords = geocode_postcode(end_postcode, data.get("end_country", "UK"))
         if not end_coords:
-            error_msg = f"Could not geocode end postcode: '{end_postcode}'"
-            app.logger.warning(f"{error_msg}. Country: {data.get('end_country', 'UK')}")
             geocoding_errors.append({
                 "type": "end_postcode",
                 "value": end_postcode,
@@ -517,7 +587,6 @@ def optimize_route():
         else:
             waypoints.append(end_coords)
 
-    # Check if we have enough valid waypoints after geocoding
     if len(waypoints) < 2:
         error_response = {
             "error": "Need at least 2 valid locations after geocoding",
@@ -525,8 +594,7 @@ def optimize_route():
             "valid_waypoints": len(waypoints),
             "required_waypoints": 2
         }
-        
-        # Add specific details about what failed
+
         if geocoding_errors:
             error_response["failed_postcodes"] = geocoding_errors
             error_response["suggestions"] = [
@@ -534,33 +602,27 @@ def optimize_route():
                 "Ensure the country is specified correctly",
                 "Try using a different postcode or customer location"
             ]
-        
+
         if failed_customers:
             error_response["failed_customers"] = failed_customers
             error_response["suggestions"] = error_response.get("suggestions", []) + [
                 "Check customer postcode data for accuracy",
                 "Consider selecting different customers with valid postcodes"
             ]
-        
+
         app.logger.error(f"Route optimization failed: insufficient valid waypoints. Details: {error_response}")
         return jsonify(error_response), 400
 
     optimized_order, legs = optimize_route_with_google_maps(waypoints, GOOGLE_MAPS_API_KEY)
 
-    # Reconstruct optimized customer list based on the order
     if optimized_order and len(customers) > 0:
-        # Google Maps returns the order of intermediate waypoints (excluding first and last)
-        # We need to map this back to our customers
-        
         try:
             if start_postcode and end_postcode:
-                # Start + customers + end
                 if len(customers) > 0 and all(0 <= i < len(customers) for i in optimized_order):
                     reordered_customers = [customers[i] for i in optimized_order]
                 else:
                     reordered_customers = []
             elif start_postcode:
-                # Start + customers (last customer is the end)
                 if len(customers) > 1:
                     middle_customers = customers[:-1]
                     if all(0 <= i < len(middle_customers) for i in optimized_order):
@@ -571,7 +633,6 @@ def optimize_route():
                 else:
                     reordered_customers = customers
             elif end_postcode:
-                # First customer is start + middle customers + end
                 if len(customers) > 1:
                     middle_customers = customers[1:]
                     if all(0 <= i < len(middle_customers) for i in optimized_order):
@@ -582,7 +643,6 @@ def optimize_route():
                 else:
                     reordered_customers = customers
             else:
-                # Just customers, first and last are fixed
                 if len(customers) > 2:
                     middle_customers = customers[1:-1]
                     if all(0 <= i < len(middle_customers) for i in optimized_order):
@@ -595,7 +655,7 @@ def optimize_route():
         except (IndexError, TypeError) as e:
             print(f"Error reordering customers: {e}")
             reordered_customers = customers
-        
+
         optimized_customers = reordered_customers
     else:
         optimized_customers = customers
@@ -635,6 +695,5 @@ def health_check():
 
 
 if __name__ == "__main__":
-    # Only enable debug mode in development environment
     debug_mode = os.environ.get("FLASK_ENV") == "development"
     app.run(debug=debug_mode, host="0.0.0.0", port=5000)

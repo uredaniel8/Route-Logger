@@ -17,59 +17,69 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
     setSortConfig({ key, direction });
   };
 
+  // IMPORTANT:
+  // Selection must refer to the ORIGINAL index in the raw customers array,
+  // otherwise sorting/filtering breaks selection + map/route linkage.
   const sortedCustomers = React.useMemo(() => {
-    let sorted = [...customers];
-    
+    // Attach original index for stable selection + updates
+    let rows = customers.map((customer, originalIndex) => ({
+      ...customer,
+      __index: originalIndex,
+    }));
+
     // Apply filters
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
-      sorted = sorted.filter(customer => 
+      rows = rows.filter(customer =>
         (customer.company && customer.company.toLowerCase().includes(lowerSearchTerm)) ||
         (customer.account_number && customer.account_number.toLowerCase().includes(lowerSearchTerm)) ||
         (customer.postcode && customer.postcode.toLowerCase().includes(lowerSearchTerm))
       );
     }
-    
+
     if (filterAreaCode) {
-      sorted = sorted.filter(customer => 
-        customer.tagged_customers && customer.tagged_customers.toLowerCase() === filterAreaCode.toLowerCase()
+      rows = rows.filter(customer =>
+        customer.tagged_customers && String(customer.tagged_customers).toLowerCase() === filterAreaCode.toLowerCase()
       );
     }
-    
+
     if (filterStatus) {
-      sorted = sorted.filter(customer => 
-        customer.status && customer.status.toLowerCase() === filterStatus.toLowerCase()
+      rows = rows.filter(customer =>
+        customer.status && String(customer.status).toLowerCase() === filterStatus.toLowerCase()
       );
     }
-    
+
     // Apply sorting
     if (sortConfig.key) {
-      sorted.sort((a, b) => {
-        const aVal = a[sortConfig.key] || '';
-        const bVal = b[sortConfig.key] || '';
+      rows.sort((a, b) => {
+        const aVal = a[sortConfig.key] ?? '';
+        const bVal = b[sortConfig.key] ?? '';
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
-    return sorted;
+
+    return rows;
   }, [customers, sortConfig, searchTerm, filterAreaCode, filterStatus]);
 
-  const handleCheckboxChange = (index, checked) => {
+  const handleCheckboxChange = (originalIndex, checked) => {
     if (checked) {
-      onSelectionChange([...selectedCustomers, index]);
+      // Deduplicate
+      const next = new Set([...selectedCustomers, originalIndex]);
+      onSelectionChange(Array.from(next));
     } else {
-      onSelectionChange(selectedCustomers.filter(i => i !== index));
+      onSelectionChange(selectedCustomers.filter(i => i !== originalIndex));
     }
   };
 
-  const handleEdit = (index, customer) => {
-    setEditingId(index);
+  const handleEdit = (originalIndex, customer) => {
+    setEditingId(originalIndex);
     setEditData(customer);
   };
 
-  const handleSave = (index) => {
-    onCustomerUpdate(index, editData);
+  const handleSave = (originalIndex) => {
+    onCustomerUpdate(originalIndex, editData);
     setEditingId(null);
     setEditData({});
   };
@@ -126,7 +136,7 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
           ))}
         </select>
         {(searchTerm || filterAreaCode || filterStatus) && (
-          <button 
+          <button
             onClick={() => {
               setSearchTerm('');
               setFilterAreaCode('');
@@ -138,6 +148,7 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
           </button>
         )}
       </div>
+
       <table className="customer-table">
         <thead>
           <tr>
@@ -162,74 +173,78 @@ function CustomerTable({ customers, selectedCustomers, onSelectionChange, onCust
           </tr>
         </thead>
         <tbody>
-          {sortedCustomers.map((customer, index) => (
-            <tr key={index} className={isOverdue(customer.next_due_date) ? 'overdue' : ''}>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={selectedCustomers.includes(index)}
-                  onChange={(e) => handleCheckboxChange(index, e.target.checked)}
-                />
-              </td>
-              <td>{customer.company}</td>
-              <td>{customer.account_number}</td>
-              <td>{customer.country}</td>
-              <td>{customer.postcode}</td>
-              <td>{customer.status}</td>
-              <td>£{customer.current_spend?.toLocaleString()}</td>
-              <td>
-                {editingId === index ? (
+          {sortedCustomers.map((customer) => {
+            const originalIndex = customer.__index;
+            return (
+              <tr key={originalIndex} className={isOverdue(customer.next_due_date) ? 'overdue' : ''}>
+                <td>
                   <input
-                    type="text"
-                    value={editData.tagged_customers || ''}
-                    onChange={(e) => setEditData({ ...editData, tagged_customers: e.target.value })}
+                    type="checkbox"
+                    checked={selectedCustomers.includes(originalIndex)}
+                    onChange={(e) => handleCheckboxChange(originalIndex, e.target.checked)}
                   />
-                ) : (
-                  <span className={`area-code-badge ${typeof customer.tagged_customers === 'string' ? customer.tagged_customers.toLowerCase() : ''}`}>
-                    {customer.tagged_customers}
-                  </span>
-                )}
-              </td>
-              <td>
-                {editingId === index ? (
-                  <input
-                    type="date"
-                    value={editData.date_of_last_visit || ''}
-                    onChange={(e) => setEditData({ ...editData, date_of_last_visit: e.target.value })}
-                  />
-                ) : (
-                  customer.date_of_last_visit
-                )}
-              </td>
-              <td>
-                {editingId === index ? (
-                  <input
-                    type="number"
-                    value={editData.visit_frequency || ''}
-                    onChange={(e) => setEditData({ ...editData, visit_frequency: e.target.value })}
-                  />
-                ) : (
-                  customer.visit_frequency
-                )}
-              </td>
-              <td className={isOverdue(customer.next_due_date) ? 'overdue-date' : ''}>
-                {customer.next_due_date}
-                {isOverdue(customer.next_due_date) && ' ⚠️'}
-              </td>
-              <td>
-                {editingId === index ? (
-                  <>
-                    <button onClick={() => handleSave(index)} className="btn-save">Save</button>
-                    <button onClick={handleCancel} className="btn-cancel">Cancel</button>
-                  </>
-                ) : (
-                  <button onClick={() => handleEdit(index, customer)} className="btn-edit">Edit</button>
-                )}
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td>{customer.company}</td>
+                <td>{customer.account_number}</td>
+                <td>{customer.country}</td>
+                <td>{customer.postcode}</td>
+                <td>{customer.status}</td>
+                <td>£{customer.current_spend?.toLocaleString()}</td>
+                <td>
+                  {editingId === originalIndex ? (
+                    <input
+                      type="text"
+                      value={editData.tagged_customers || ''}
+                      onChange={(e) => setEditData({ ...editData, tagged_customers: e.target.value })}
+                    />
+                  ) : (
+                    <span className={`area-code-badge ${typeof customer.tagged_customers === 'string' ? customer.tagged_customers.toLowerCase() : ''}`}>
+                      {customer.tagged_customers}
+                    </span>
+                  )}
+                </td>
+                <td>
+                  {editingId === originalIndex ? (
+                    <input
+                      type="date"
+                      value={editData.date_of_last_visit || ''}
+                      onChange={(e) => setEditData({ ...editData, date_of_last_visit: e.target.value })}
+                    />
+                  ) : (
+                    customer.date_of_last_visit
+                  )}
+                </td>
+                <td>
+                  {editingId === originalIndex ? (
+                    <input
+                      type="number"
+                      value={editData.visit_frequency || ''}
+                      onChange={(e) => setEditData({ ...editData, visit_frequency: e.target.value })}
+                    />
+                  ) : (
+                    customer.visit_frequency
+                  )}
+                </td>
+                <td className={isOverdue(customer.next_due_date) ? 'overdue-date' : ''}>
+                  {customer.next_due_date}
+                  {isOverdue(customer.next_due_date) && ' ⚠️'}
+                </td>
+                <td>
+                  {editingId === originalIndex ? (
+                    <>
+                      <button onClick={() => handleSave(originalIndex)} className="btn-save">Save</button>
+                      <button onClick={handleCancel} className="btn-cancel">Cancel</button>
+                    </>
+                  ) : (
+                    <button onClick={() => handleEdit(originalIndex, customer)} className="btn-edit">Edit</button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
+
       {sortedCustomers.length === 0 && (
         <div className="no-data">No customers found</div>
       )}
